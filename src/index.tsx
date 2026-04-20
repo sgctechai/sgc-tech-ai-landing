@@ -90,67 +90,88 @@ const pricing = [
   },
 ]
 
-// Customer success stories — real Unsplash editorial photos.
-// Using photo-* URLs with ixlib params; these are verified stable IDs.
+// Industry success stories — each card matches a custom dashboard screenshot.
+// Images live in /public/static/stories/ and titles reflect what each dashboard
+// actually shows (LMS, hospital PMS, MRP, POS, BoQ, WMS, CRM, hotel PMS).
 const stories = [
   {
-    id: 'vertex',
-    tag: 'Financial Services',
-    title: 'Vertex Financial',
-    description: 'Cut fraud-review time 71% with AI triage deployed across 14 regional branches.',
-    metric: '71%',
-    metricLabel: 'faster triage',
-    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80',
+    id: 'education',
+    tag: 'Education',
+    title: 'LMS & Live Classrooms',
+    description: 'Student enrolment, attendance, fee status, and live simulated lessons — all in one command centre.',
+    metric: '92%',
+    metricLabel: 'attendance rate',
+    image: '/static/stories/education-lms.jpg',
     href: '#',
   },
   {
-    id: 'meridian',
-    tag: 'Logistics',
-    title: 'Meridian Logistics',
-    description: 'Route-optimization agent saved $340K in fuel costs in Q1 alone. 11-day deployment.',
-    metric: '$340K',
-    metricLabel: 'Q1 savings',
-    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
-    href: '#',
-  },
-  {
-    id: 'arclight',
+    id: 'healthcare',
     tag: 'Healthcare',
-    title: 'Arclight Health',
-    description: 'Clinical documentation assistant reclaimed 2.3 hours per clinician per day.',
-    metric: '2.3 hrs',
-    metricLabel: 'saved / day',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80',
+    title: 'Hospital Operations',
+    description: 'Appointments, insurance claims, pharmacy stock, and billing — reconciled in real time across the facility.',
+    metric: 'AED 1,200',
+    metricLabel: 'avg patient total',
+    image: '/static/stories/healthcare-hospital.jpg',
     href: '#',
   },
   {
-    id: 'northwind',
-    tag: 'Retail & eCom',
-    title: 'Northwind Retail',
-    description: 'Support resolution time dropped 63% across 1.2M tickets/month. NPS up 18 points.',
-    metric: '63%',
-    metricLabel: 'faster CX',
-    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=80',
-    href: '#',
-  },
-  {
-    id: 'helix',
+    id: 'manufacturing',
     tag: 'Manufacturing',
-    title: 'Helix Manufacturing',
-    description: 'Predictive-maintenance vision agents caught 94% of defects before shipping.',
-    metric: '94%',
-    metricLabel: 'defects caught',
-    image: 'https://images.unsplash.com/photo-1565043666747-69f6646db940?auto=format&fit=crop&w=1200&q=80',
+    title: 'MRP & Shop Floor',
+    description: 'Production planning, QC checklists, and shop-floor metrics streamed to every screen on the line.',
+    metric: '1.2%',
+    metricLabel: 'reject rate',
+    image: '/static/stories/manufacturing-mrp.jpg',
     href: '#',
   },
   {
-    id: 'cypress',
-    tag: 'Legal',
-    title: 'Cypress Legal',
-    description: 'Contract review accelerated 8× for M&A deals; lawyers freed up for strategy.',
-    metric: '8×',
-    metricLabel: 'faster review',
-    image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80',
+    id: 'retail',
+    tag: 'Retail & eCom',
+    title: 'Unified Commerce',
+    description: 'Omnichannel POS, VIP loyalty, and mobile shopping — one customer, one basket, every channel.',
+    metric: '$326',
+    metricLabel: 'avg cart value',
+    image: '/static/stories/retail-pos.jpg',
+    href: '#',
+  },
+  {
+    id: 'construction',
+    tag: 'Construction',
+    title: 'BoQ & Progress Billing',
+    description: 'Cost breakdowns, subcontractor schedules, material tracking, and progress billing — on one screen.',
+    metric: '75%',
+    metricLabel: 'work completed',
+    image: '/static/stories/construction-boq.jpg',
+    href: '#',
+  },
+  {
+    id: 'logistics',
+    tag: 'Logistics',
+    title: 'Warehouse & Customs',
+    description: 'Inventory levels, multi-site network, landed-cost analysis, and customs clearance — unified.',
+    metric: '125,340',
+    metricLabel: 'units tracked',
+    image: '/static/stories/logistics-warehouse.jpg',
+    href: '#',
+  },
+  {
+    id: 'realestate',
+    tag: 'Real Estate',
+    title: 'Property CRM',
+    description: 'Unit-level sold/available status, owner data, and sales analytics — from listing to close.',
+    metric: '275',
+    metricLabel: 'total units',
+    image: '/static/stories/realestate-crm.jpg',
+    href: '#',
+  },
+  {
+    id: 'hospitality',
+    tag: 'Hospitality',
+    title: 'Hotel & F&B PMS',
+    description: 'Reservations, housekeeping, F&B cost control, and restaurant POS — the full property in one pane.',
+    metric: 'AED 75,320',
+    metricLabel: 'daily revenue',
+    image: '/static/stories/hospitality-hotel.jpg',
     href: '#',
   },
 ]
@@ -521,11 +542,11 @@ app.get('/', (c) => {
         <section class="stories-section" id="stories">
           <div class="container">
             <div class="section-header center reveal">
-              <span class="section-label">05 · Success Stories</span>
-              <h2>Real deployments. <span class="text-gradient-cyan">Real numbers.</span></h2>
+              <span class="section-label">05 · Industry Solutions</span>
+              <h2>One platform. <span class="text-gradient-cyan">Eight verticals.</span></h2>
               <p class="lead" style="margin-left: auto; margin-right: auto;">
-                Drag, swipe, or use the arrows. Each card is a production customer —
-                fourteen days from handshake to measurable ROI.
+                Drag, swipe, or use the arrows. Each card is a real production dashboard we've shipped —
+                education, healthcare, manufacturing, retail, construction, logistics, real estate, hospitality.
               </p>
             </div>
 
