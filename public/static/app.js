@@ -56,27 +56,22 @@
 
     new Typed('#painText', {
       strings: [
-        'Chasing approvals on WhatsApp.',
-        'Commissions calculated on spreadsheets.',
-        'No visibility on who\'s actually performing.',
-        'Deals falling through broken pipelines.',
-        'Paying for software nobody actually uses.',
-        'Finance closing the month manually.^600 Again.',
+        'Chasing approvals on <span class="pain-red">WhatsApp.</span>',
+        'Commissions calculated on <span class="pain-red">spreadsheets.</span>',
+        'No visibility on <span class="pain-red">who\'s actually performing.</span>',
+        'Deals <span class="pain-red">falling through</span> broken pipelines.',
+        'Paying for software <span class="pain-red">nobody actually uses.</span>',
+        'Finance closing the month manually. <span class="pain-red">Again.</span>',
       ],
-      typeSpeed: 42,
-      backSpeed: 20,
-      backDelay: 1800,
+      typeSpeed: 40,
+      backSpeed: 18,
+      backDelay: 2000,
       startDelay: 500,
       loop: true,
       showCursor: true,
       cursorChar: '|',
       autoInsertCss: false,
-      preStringTyped: () => {
-        if (el.parentElement) el.parentElement.classList.add('pain-typing');
-      },
-      onStringTyped: () => {
-        if (el.parentElement) el.parentElement.classList.remove('pain-typing');
-      },
+      contentType: 'html',
     });
   }
 
