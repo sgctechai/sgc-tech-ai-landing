@@ -1,12 +1,13 @@
 /* ======================================================================
    SGC TECH AI — Premium Landing Page
    Design System: Glassmorphism + Brutalist Minimalism + Neon Cyan accents
-   Typography: Space Grotesk (display) + Inter alternative via Outfit (body)
+   Typography: Satoshi (display + body) + JetBrains Mono (code/labels)
    Palette: Deep navy base, electric cyan #00D9FF, tech blue #0047FF
    ====================================================================== */
 
 /* ----- Typography ----- */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ----- CSS Reset & Variables ----- */
 :root {
@@ -53,7 +54,7 @@ html {
 }
 
 body {
-  font-family: 'Outfit', system-ui, sans-serif;
+  font-family: 'Satoshi', system-ui, sans-serif;
   font-weight: 400;
   background: var(--navy-900);
   color: var(--gray-100);
@@ -93,11 +94,11 @@ a { color: inherit; text-decoration: none; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 
 /* ----- Typography scale ----- */
-.font-display { font-family: 'Space Grotesk', system-ui, sans-serif; letter-spacing: -0.02em; }
+.font-display { font-family: 'Satoshi', system-ui, sans-serif; letter-spacing: -0.02em; }
 .font-mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0; }
 
 h1, h2, h3, h4 {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Satoshi', system-ui, sans-serif;
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.05;
@@ -234,7 +235,7 @@ section {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-weight: 500;
   font-size: 0.95rem;
   letter-spacing: -0.01em;
@@ -316,7 +317,7 @@ section {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-weight: 700;
   font-size: 1.125rem;
   letter-spacing: -0.02em;
@@ -496,7 +497,7 @@ section {
 
 /* "Your business deserves better than this." — hero-scale headline */
 .pain-top {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: clamp(1.9rem, 3.8vw, 3.2rem);
   font-weight: 800;
   letter-spacing: -0.035em;
@@ -523,14 +524,14 @@ section {
   color: var(--cyan);
   font-size: 1.6rem;
   flex-shrink: 0;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-weight: 700;
   line-height: 1;
 }
 
 /* Typewriter target — hero-scale, bold */
 .pain-text {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: clamp(1.4rem, 3vw, 2.5rem);
   font-weight: 700;
   color: var(--white);
@@ -554,7 +555,7 @@ section {
 
 /* Resolution line — biggest text in the block */
 .pain-bottom {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: clamp(1.75rem, 3.5vw, 3rem);
   font-weight: 800;
   color: var(--white);
@@ -630,7 +631,7 @@ section {
 }
 
 .trust-badge .badge-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--white);
@@ -646,7 +647,7 @@ section {
 }
 
 .stat-value {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-weight: 600;
   font-size: clamp(1.5rem, 2.2vw, 2rem);
   letter-spacing: -0.02em;
@@ -827,7 +828,7 @@ section {
 }
 
 .marquee-item {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-weight: 600;
   font-size: 1.35rem;
   color: var(--gray-300);
@@ -905,7 +906,7 @@ section {
 }
 
 .industry-card .name {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: 1.15rem;
   font-weight: 600;
   color: var(--white);
@@ -1020,7 +1021,7 @@ section {
 }
 
 .pricing-tier {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: 0.85rem;
   font-weight: 500;
   letter-spacing: 0.1em;
@@ -1035,14 +1036,14 @@ section {
 }
 
 .pricing-price .currency {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-weight: 500;
   font-size: 1.5rem;
   color: var(--gray-400);
 }
 
 .pricing-price .amount {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-weight: 700;
   font-size: clamp(2.8rem, 4.5vw, 3.8rem);
   color: var(--white);
@@ -1106,7 +1107,7 @@ section {
 .stars { display: flex; gap: 2px; color: var(--cyan); }
 
 .quote {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-weight: 400;
   font-size: 1.05rem;
   line-height: 1.55;
@@ -1115,7 +1116,7 @@ section {
 }
 
 .quote-mark {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: 4rem;
   line-height: 0;
   color: var(--cyan);
@@ -1135,7 +1136,7 @@ section {
   justify-content: center;
   color: var(--navy-900);
   font-weight: 600;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: 0.95rem;
   flex-shrink: 0;
 }
@@ -1578,7 +1579,7 @@ footer {
 }
 
 .stack-card .stack-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
   font-size: 1.35rem;
   font-weight: 600;
   color: #fff;
@@ -1598,7 +1599,7 @@ footer {
   align-items: baseline;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Satoshi', sans-serif;
 }
 
 .stack-card .stack-metric .value {

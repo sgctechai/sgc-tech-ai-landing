@@ -13,6 +13,7 @@ export const renderer = jsxRenderer(({ children }) => {
         <meta property="og:type" content="website" />
         <title>SGC TECH AI — AI-Powered Cost Savings, Deployed in 30 Days</title>
         <link rel="icon" type="image/png" href="/static/sgc-tech-logo.png" />
+        <link rel="preconnect" href="https://api.fontshare.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
         <link href="/static/style.css" rel="stylesheet" />

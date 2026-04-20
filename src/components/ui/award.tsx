@@ -142,7 +142,7 @@ const StampBadge = ({ id, title, sub, color, icon, iconViewBox = '0 0 24 24' }: 
         <circle cx="96" cy="96" r="70" class="ab-ring" />
 
         {/* Title arc — top (font-size 20 = 10px at 96px render) */}
-        <text font-family="'Space Grotesk',sans-serif" font-size="20" font-weight="700"
+        <text font-family="'Satoshi',sans-serif" font-size="20" font-weight="700"
           letter-spacing="3" text-transform="uppercase" fill="currentColor" class="ab-color">
           <textPath href={`#${tId}`} startOffset="50%" textAnchor="middle">{title}</textPath>
         </text>
@@ -191,7 +191,7 @@ const AwardBadgeCard = ({ id, title, sub, color, icon, level = 'gold', iconViewB
 
         {/* Level ribbon pill at top */}
         <rect x="62" y="20" width="68" height="22" rx="11" fill={`url(#${gradId})`} />
-        <text x="96" y="35.5" font-family="'Space Grotesk',sans-serif" font-size="13"
+        <text x="96" y="35.5" font-family="'Satoshi',sans-serif" font-size="13"
           font-weight="700" letter-spacing="1.5" text-anchor="middle" fill="#0b0e27">
           {(level ?? 'gold').toUpperCase()}
         </text>
@@ -205,7 +205,7 @@ const AwardBadgeCard = ({ id, title, sub, color, icon, level = 'gold', iconViewB
         </g>
 
         {/* Title (font-size 22 = 11px rendered) */}
-        <text x="96" y="122" font-family="'Space Grotesk',sans-serif" font-size="22"
+        <text x="96" y="122" font-family="'Satoshi',sans-serif" font-size="22"
           font-weight="700" letter-spacing="1" text-anchor="middle"
           fill="white">{title}</text>
 
