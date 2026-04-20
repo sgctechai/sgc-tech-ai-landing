@@ -56,8 +56,8 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
-  // ---- Scroll reveal ----
-  const revealEls = document.querySelectorAll('.reveal');
+  // ---- Scroll reveal (handles .reveal, .reveal-left, .reveal-right, .reveal-scale) ----
+  const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
   if (revealEls.length) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -66,7 +66,7 @@
           io.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
     revealEls.forEach((el) => io.observe(el));
   }
 

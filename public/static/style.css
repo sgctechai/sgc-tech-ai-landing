@@ -1257,6 +1257,133 @@ footer {
 .reveal-delay-3 { transition-delay: 0.24s; }
 .reveal-delay-4 { transition-delay: 0.32s; }
 
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-48px);
+  transition: opacity 0.85s var(--ease-out-expo), transform 0.85s var(--ease-out-expo);
+}
+.reveal-left.in { opacity: 1; transform: translateX(0); }
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(48px);
+  transition: opacity 0.85s var(--ease-out-expo), transform 0.85s var(--ease-out-expo);
+}
+.reveal-right.in { opacity: 1; transform: translateX(0); }
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.88) translateY(20px);
+  transition: opacity 0.85s var(--ease-out-expo), transform 0.85s var(--ease-out-expo);
+}
+.reveal-scale.in { opacity: 1; transform: scale(1) translateY(0); }
+
+/* ----- Award Badges — hexagonal medal row ----- */
+.award-badges {
+  margin-bottom: 2.25rem;
+}
+
+.award-badges-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin-bottom: 0.875rem;
+}
+
+.award-badges-grid {
+  display: flex;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.award-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: default;
+}
+
+.award-badge-shell {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+.award-badge-hex {
+  width: 48px;
+  height: 48px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,71,255,0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--badge-color, var(--cyan));
+  transition: background 0.4s var(--ease-out-expo), filter 0.4s var(--ease-out-expo);
+  position: relative;
+  z-index: 1;
+}
+
+.award-badge-shell::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(135deg, var(--badge-color, var(--cyan)), transparent 65%);
+  opacity: 0.35;
+  transition: opacity 0.4s var(--ease-out-expo);
+  z-index: 0;
+}
+
+.award-badge-shine {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.6;
+}
+
+.award-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.award-badge:hover .award-badge-shell::before { opacity: 0.75; }
+.award-badge:hover .award-badge-hex {
+  background: linear-gradient(135deg, var(--badge-color, var(--cyan)), rgba(0,71,255,0.3));
+  filter: drop-shadow(0 0 10px var(--badge-color, var(--cyan)));
+}
+
+.award-badge-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -0.01em;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.award-badge-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 /* ======================================================================
    CARD STACK — 3D fanned carousel
    Ported from the React/Framer Motion version to vanilla JS + CSS.

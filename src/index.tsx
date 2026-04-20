@@ -7,7 +7,7 @@ import {
   IconSpeed, IconShield, IconIntegration, IconCpu, IconChart, IconHeadset,
   IconTwitter, IconLinkedin, IconGithub, IconYoutube,
 } from './components/Icons'
-import { BadgeG2, BadgeSoc, BadgeIso, BadgeGdpr, BadgeHipaa, BadgeGartner } from './components/Badges'
+import { AwardBadges } from './components/AwardBadges'
 import { CircuitBg } from './components/CircuitBg'
 
 const app = new Hono()
@@ -289,57 +289,7 @@ app.get('/', (c) => {
                   </a>
                 </div>
 
-                <div class="hero-badges reveal reveal-delay-4">
-                  <span class="hero-badges-label">Awards &amp; Compliance</span>
-
-                  <div class="trust-badge" title="G2 Leader — Spring 2025">
-                    <span class="badge-icon"><BadgeG2 /></span>
-                    <span class="badge-text">
-                      <span class="badge-title">G2 Leader</span>
-                      <span class="badge-sub">Spring 2025</span>
-                    </span>
-                  </div>
-
-                  <div class="trust-badge" title="SOC 2 Type II Certified">
-                    <span class="badge-icon"><BadgeSoc /></span>
-                    <span class="badge-text">
-                      <span class="badge-title">SOC 2</span>
-                      <span class="badge-sub">Type II</span>
-                    </span>
-                  </div>
-
-                  <div class="trust-badge" title="ISO/IEC 27001:2022 Certified">
-                    <span class="badge-icon"><BadgeIso /></span>
-                    <span class="badge-text">
-                      <span class="badge-title">ISO 27001</span>
-                      <span class="badge-sub">Certified</span>
-                    </span>
-                  </div>
-
-                  <div class="trust-badge" title="GDPR &amp; CCPA Compliant">
-                    <span class="badge-icon"><BadgeGdpr /></span>
-                    <span class="badge-text">
-                      <span class="badge-title">GDPR</span>
-                      <span class="badge-sub">Compliant</span>
-                    </span>
-                  </div>
-
-                  <div class="trust-badge" title="HIPAA-ready for healthcare deployments">
-                    <span class="badge-icon"><BadgeHipaa /></span>
-                    <span class="badge-text">
-                      <span class="badge-title">HIPAA</span>
-                      <span class="badge-sub">Ready</span>
-                    </span>
-                  </div>
-
-                  <div class="trust-badge" title="Gartner Cool Vendor 2024">
-                    <span class="badge-icon"><BadgeGartner /></span>
-                    <span class="badge-text">
-                      <span class="badge-title">Gartner</span>
-                      <span class="badge-sub">Cool Vendor '24</span>
-                    </span>
-                  </div>
-                </div>
+                <AwardBadges />
 
                 <div class="hero-stats reveal reveal-delay-4">
                   <div>
@@ -357,7 +307,7 @@ app.get('/', (c) => {
                 </div>
               </div>
 
-              <div class="hero-visual reveal reveal-delay-2" aria-hidden="true">
+              <div class="hero-visual reveal-right reveal-delay-2" aria-hidden="true">
                 <div class="hero-visual-glow"></div>
                 <div class="hero-ring hero-ring-3"></div>
                 <div class="hero-ring hero-ring-2"></div>
@@ -424,7 +374,7 @@ app.get('/', (c) => {
 
             <div class="industries-grid">
               {industries.map((ind, i) => (
-                <article class="glass industry-card reveal" style={`transition-delay: ${(i % 4) * 70}ms`}>
+                <article class={`glass industry-card ${i % 2 === 0 ? 'reveal-left' : 'reveal-right'}`} style={`transition-delay: ${(i % 4) * 70}ms`}>
                   <span class="index">{String(i + 1).padStart(2, '0')}</span>
                   <div class="icon"><ind.Icon /></div>
                   <div>
@@ -448,7 +398,7 @@ app.get('/', (c) => {
 
             <div class="values-grid">
               {values.map((v, i) => (
-                <article class="glass value-card reveal" data-holo style={`transition-delay: ${(i % 3) * 80}ms`}>
+                <article class="glass value-card reveal-scale" data-holo style={`transition-delay: ${(i % 3) * 80}ms`}>
                   <div class="num">{v.num}</div>
                   <div class="icon-ring"><v.Icon /></div>
                   <h3>{v.title}</h3>
@@ -470,7 +420,7 @@ app.get('/', (c) => {
 
             <div class="pricing-grid">
               {pricing.map((p, i) => (
-                <article class={`glass pricing-card reveal ${p.featured ? 'featured' : ''}`} style={`transition-delay: ${i * 90}ms`}>
+                <article class={`glass pricing-card reveal-scale ${p.featured ? 'featured' : ''}`} style={`transition-delay: ${i * 90}ms`}>
                   {p.featured && <span class="pricing-tag">Most Popular</span>}
                   <div class="pricing-tier">{p.tier}</div>
 
@@ -519,7 +469,7 @@ app.get('/', (c) => {
 
             <div class="testimonials-grid">
               {testimonials.map((t, i) => (
-                <article class="glass testimonial-card reveal" style={`transition-delay: ${i * 100}ms`}>
+                <article class={`glass testimonial-card ${i === 1 ? 'reveal' : i === 0 ? 'reveal-left' : 'reveal-right'}`} style={`transition-delay: ${i * 100}ms`}>
                   <div class="quote-mark">"</div>
                   <div class="stars" aria-label="5 out of 5 stars">
                     {[...Array(5)].map(() => <IconStar />)}
