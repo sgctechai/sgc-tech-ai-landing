@@ -414,4 +414,98 @@
   }
 
   document.querySelectorAll('.card-stack').forEach(initCardStack);
+
+  // =====================================================================
+  // PARTICLES BACKGROUND — ported from the React particles-bg component.
+  // Uses particles.js (loaded via CDN in renderer.tsx). Dark-only palette
+  // since our site is dark-theme-locked. Waits for the CDN script to load
+  // because we rely on `window.particlesJS` being defined.
+  // =====================================================================
+  function initParticles() {
+    const container = document.getElementById('particles-js');
+    if (!container) return;
+    if (typeof window.particlesJS !== 'function') return false;
+
+    // Clean up any previous canvas (idempotent)
+    const old = container.querySelector('canvas');
+    if (old) old.remove();
+    if (window.pJSDom && window.pJSDom.length > 0) {
+      window.pJSDom.forEach((p) => {
+        try { p.pJS.fn.vendors.destroypJS(); } catch (_) {}
+      });
+      window.pJSDom = [];
+    }
+
+    // SGC TECH palette — matches hero cyan/tech-blue exactly
+    const colors = {
+      particles: '#00d9ff',  // electric cyan (main accent)
+      lines:     '#00b8d9',  // dim cyan (line connectors)
+      accent:    '#0047ff',  // tech blue (stroke)
+    };
+
+    // Tune particle count by viewport — fewer on mobile for perf
+    const vw = Math.max(window.innerWidth, 320);
+    const count = vw < 700 ? 60 : vw < 1100 ? 90 : 120;
+
+    window.particlesJS('particles-js', {
+      particles: {
+        number:  { value: count, density: { enable: true, value_area: 900 } },
+        color:   { value: colors.particles },
+        shape:   { type: 'circle', stroke: { width: 0.5, color: colors.accent } },
+        opacity: {
+          value: 0.55,
+          random: true,
+          anim: { enable: true, speed: 0.8, opacity_min: 0.15 },
+        },
+        size: {
+          value: 2.4,
+          random: true,
+          anim: { enable: true, speed: 1.8, size_min: 0.6 },
+        },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: colors.lines,
+          opacity: 0.28,
+          width: 1,
+        },
+        move: {
+          enable: true,
+          speed: 1.4,
+          direction: 'none',
+          random: true,
+          straight: false,
+          out_mode: 'bounce',
+          attract: { enable: false },
+        },
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: {
+          onhover: { enable: !prefersReducedMotion, mode: 'grab' },
+          onclick: { enable: true, mode: 'push' },
+          resize:  true,
+        },
+        modes: {
+          grab:    { distance: 200, line_linked: { opacity: 0.7 } },
+          push:    { particles_nb: 3 },
+          repulse: { distance: 180, duration: 0.4 },
+        },
+      },
+      retina_detect: true,
+    });
+    return true;
+  }
+
+  // particles.js is loaded with `defer`, but so is this script. It may load
+  // after our DOMContentLoaded. We poll briefly (up to ~3s) then init.
+  (function waitForParticles() {
+    let tries = 0;
+    const attempt = () => {
+      if (initParticles() === true) return;
+      if (++tries > 30) return;         // give up after ~3s
+      setTimeout(attempt, 100);
+    };
+    attempt();
+  })();
 })();

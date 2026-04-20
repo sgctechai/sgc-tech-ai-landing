@@ -236,6 +236,8 @@ app.get('/', (c) => {
 
         {/* ============== HERO ============== */}
         <section class="hero">
+          {/* Interactive particle field — loaded via particles.js CDN */}
+          <div id="particles-js" aria-hidden="true"></div>
           <CircuitBg />
           <div class="container">
             <div class="hero-grid">
