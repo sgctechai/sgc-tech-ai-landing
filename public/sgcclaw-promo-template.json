@@ -9,6 +9,7 @@
     "fps": 30,
     "duration": 60
   },
+  "inputs": [],
   "composition": {
     "scenes": [
       {
