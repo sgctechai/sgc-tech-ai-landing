@@ -330,7 +330,7 @@
             "duration": 160,
             "props": { "text": "Predict & Simulate", "fontSize": 42, "fontWeight": "700", "color": "#ffffff", "textAlign": "left", "fontFamily": "Inter, system-ui, sans-serif" },
             "animations": [
-              { "type": "entrance", "effect": "slideInLeft", "delay": 5, "duration": 20, "easing": "easeOutCubic" },
+              { "type": "entrance", "effect": "slideInLeft", "delay": 0, "duration": 20, "easing": "easeOutCubic" },
               { "type": "exit", "effect": "fadeOut", "delay": 0, "duration": 20, "easing": "easeInCubic" }
             ]
           },
@@ -738,6 +738,7 @@
             "position": { "x": 0, "y": 0 },
             "size": { "width": 0, "height": 0 },
             "from": 0,
+            "duration": 1500,
             "props": {
               "src": "./assets/sgcclaw-voiceover.mp3",
               "volume": 1.0,
