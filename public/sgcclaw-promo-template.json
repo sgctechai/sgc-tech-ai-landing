@@ -714,7 +714,7 @@
             "size": { "width": 0, "height": 0 },
             "from": 0,
             "props": {
-              "src": "https://archive.org/download/EdvardGrieg-PeerGyntSuite1Op.46/01-InTheHallOfTheMountainKing.mp3",
+              "src": "./assets/background-music.mp3",
               "volume": 0.35,
               "fadeIn": 30,
               "fadeOut": 60,
