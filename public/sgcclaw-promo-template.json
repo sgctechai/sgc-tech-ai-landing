@@ -143,7 +143,7 @@
               "height": 180
             },
             "from": 0,
-            "duration": 94,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "MEET",
@@ -183,7 +183,7 @@
               "height": 180
             },
             "from": 2,
-            "duration": 220,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "SGC CLAW",
@@ -223,7 +223,7 @@
               "height": 70
             },
             "from": 87,
-            "duration": 96,
+            "duration": 66,
             "opacity": 1,
             "props": {
               "text": "Not just a prediction engine.",
@@ -263,7 +263,7 @@
               "height": 70
             },
             "from": 138,
-            "duration": 114,
+            "duration": 90,
             "opacity": 1,
             "props": {
               "text": "A centralized brain for your entire business.",
@@ -339,7 +339,7 @@
               "height": 100
             },
             "from": 232,
-            "duration": 64,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Scattered data.",
@@ -379,7 +379,7 @@
               "height": 100
             },
             "from": 273,
-            "duration": 67,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Slow decisions.",
@@ -419,7 +419,7 @@
               "height": 100
             },
             "from": 316,
-            "duration": 68,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Manual workflows.",
@@ -459,7 +459,7 @@
               "height": 100
             },
             "from": 370,
-            "duration": 114,
+            "duration": 90,
             "opacity": 1,
             "props": {
               "text": "Your competitors aren't waiting. Neither should you.",
@@ -499,7 +499,7 @@
               "height": 160
             },
             "from": 470,
-            "duration": 123,
+            "duration": 102,
             "opacity": 1,
             "props": {
               "text": "SGC Claw connects across\nall your software systems.",
@@ -539,7 +539,7 @@
               "height": 80
             },
             "from": 563,
-            "duration": 71,
+            "duration": 42,
             "opacity": 1,
             "props": {
               "text": "In real time.",
@@ -615,7 +615,7 @@
               "height": 80
             },
             "from": 621,
-            "duration": 195,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Financial Data",
@@ -691,7 +691,7 @@
               "height": 80
             },
             "from": 651,
-            "duration": 165,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Customer Insights",
@@ -767,7 +767,7 @@
               "height": 80
             },
             "from": 701,
-            "duration": 135,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Operational Metrics",
@@ -807,7 +807,7 @@
               "height": 80
             },
             "from": 749,
-            "duration": 76,
+            "duration": 42,
             "opacity": 1,
             "props": {
               "text": "Analyzed. Predicted. Actionable.",
@@ -847,7 +847,7 @@
               "height": 100
             },
             "from": 829,
-            "duration": 154,
+            "duration": 54,
             "opacity": 1,
             "props": {
               "text": "In seconds, not days.",
@@ -923,7 +923,7 @@
               "height": 150
             },
             "from": 901,
-            "duration": 170,
+            "duration": 42,
             "opacity": 1,
             "props": {
               "text": "Generate Leads\nAutomatically",
@@ -999,7 +999,7 @@
               "height": 80
             },
             "from": 982,
-            "duration": 106,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Book Appointments",
@@ -1075,7 +1075,7 @@
               "height": 150
             },
             "from": 1016,
-            "duration": 84,
+            "duration": 42,
             "opacity": 1,
             "props": {
               "text": "Trigger Intelligent\nWorkflows",
@@ -1115,7 +1115,7 @@
               "height": 160
             },
             "from": 1096,
-            "duration": 98,
+            "duration": 78,
             "opacity": 1,
             "props": {
               "text": "Predict market shifts\nbefore they happen.",
@@ -1191,7 +1191,7 @@
               "height": 180
             },
             "from": 1182,
-            "duration": 204,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "1,000+",
@@ -1231,7 +1231,7 @@
               "height": 70
             },
             "from": 1182,
-            "duration": 204,
+            "duration": 66,
             "opacity": 1,
             "props": {
               "text": "Business capabilities, all working 24/7",
@@ -1271,7 +1271,7 @@
               "height": 100
             },
             "from": 1311,
-            "duration": 97,
+            "duration": 78,
             "opacity": 1,
             "props": {
               "text": "No breaks. No excuses. Just results.",
@@ -1311,7 +1311,7 @@
               "height": 80
             },
             "from": 1399,
-            "duration": 78,
+            "duration": 54,
             "opacity": 1,
             "props": {
               "text": "While others follow trends,",
@@ -1351,7 +1351,7 @@
               "height": 100
             },
             "from": 1453,
-            "duration": 80,
+            "duration": 54,
             "opacity": 1,
             "props": {
               "text": "you're building the future.",
@@ -1391,7 +1391,7 @@
               "height": 100
             },
             "from": 1524,
-            "duration": 121,
+            "duration": 90,
             "opacity": 1,
             "props": {
               "text": "SGC Claw doesn't just adapt to AI.",
@@ -1431,7 +1431,7 @@
               "height": 100
             },
             "from": 1630,
-            "duration": 84,
+            "duration": 54,
             "opacity": 1,
             "props": {
               "text": "It leads the transformation.",
@@ -1533,7 +1533,7 @@
               "height": 100
             },
             "from": 1715,
-            "duration": 84,
+            "duration": 54,
             "opacity": 1,
             "props": {
               "text": "Ready to move early?",
@@ -1573,7 +1573,7 @@
               "height": 80
             },
             "from": 1766,
-            "duration": 114,
+            "duration": 90,
             "opacity": 1,
             "props": {
               "text": "Contact us for your specific use case.",
@@ -1613,7 +1613,7 @@
               "height": 100
             },
             "from": 1834,
-            "duration": 84,
+            "duration": 66,
             "opacity": 1,
             "props": {
               "text": "The future isn't coming —",
@@ -1653,7 +1653,7 @@
               "height": 100
             },
             "from": 1875,
-            "duration": 72,
+            "duration": 42,
             "opacity": 1,
             "props": {
               "text": "you're building it.",
@@ -1693,7 +1693,7 @@
               "height": 160
             },
             "from": 1915,
-            "duration": 101,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Now.",
@@ -1733,7 +1733,7 @@
               "height": 110
             },
             "from": 1940,
-            "duration": 67,
+            "duration": 42,
             "opacity": 1,
             "props": {
               "text": "SGC Tech AI",
@@ -1773,7 +1773,7 @@
               "height": 70
             },
             "from": 2011,
-            "duration": 78,
+            "duration": 30,
             "opacity": 1,
             "props": {
               "text": "Intelligence Centralized.",
