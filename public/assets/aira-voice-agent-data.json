@@ -1,0 +1,96 @@
+{
+  "assistant": {
+    "name": "Aira",
+    "source": "OpenClaw capability model adapted to SGC TECH AI project data",
+    "modes": ["voice_agent", "chatbot"],
+    "primaryLanguage": "en",
+    "tone": "professional, concise, action-oriented"
+  },
+  "routing": {
+    "bookDemo": {
+      "enabled": true,
+      "url": "https://app.cal.com/sgctech",
+      "provider": "cal.com",
+      "notes": "Use for all demo booking intents."
+    },
+    "escalation": {
+      "enabled": true,
+      "targets": ["solutions_engineer", "sales_specialist", "support_specialist"],
+      "triggers": [
+        "high-risk request",
+        "customer asks for human",
+        "compliance-sensitive request",
+        "pricing or contract negotiation",
+        "low confidence response"
+      ],
+      "handoffData": [
+        "contact_name",
+        "company",
+        "email",
+        "phone",
+        "intent_summary",
+        "conversation_context"
+      ]
+    }
+  },
+  "coreCapabilities": [
+    {
+      "name": "Predict & Simulate",
+      "detail": "Agentic outcome modeling before execution"
+    },
+    {
+      "name": "Connect & Integrate",
+      "detail": "Integrates with 200+ software platforms and aligns with 1000+ business capability narrative"
+    },
+    {
+      "name": "Pull & Analyze",
+      "detail": "Real-time reporting, insight generation, and decision support"
+    },
+    {
+      "name": "Generate & Convert",
+      "detail": "Lead capture, Q&A, qualification, and appointment booking"
+    },
+    {
+      "name": "Trigger & Automate",
+      "detail": "24/7 workflow orchestration with trigger-based execution"
+    },
+    {
+      "name": "Compound ROI",
+      "detail": "Fixed-price deployment with measurable outcomes and observability"
+    }
+  ],
+  "extendedCapabilities": [
+    "Customer insights analysis",
+    "Operational metrics aggregation",
+    "Market-shift prediction",
+    "Intelligent workflow triggering",
+    "Appointment booking automation",
+    "Human escalation orchestration",
+    "Compliance-aware guidance",
+    "Multi-industry deployment patterns"
+  ],
+  "industryCoverage": [
+    "Healthcare",
+    "Finance",
+    "Retail & eCom",
+    "Manufacturing",
+    "Logistics",
+    "Education",
+    "Legal",
+    "Real Estate"
+  ],
+  "serviceData": {
+    "deploymentTimelineDays": 30,
+    "integrationsCount": 200,
+    "businessCapabilitiesNarrative": "1000+",
+    "prioritySupport": "24/7",
+    "security": ["SOC 2", "GDPR", "HIPAA-ready"],
+    "pricingTiers": ["Starter", "Professional", "Enterprise"]
+  },
+  "knowledgeSourcesInRepo": [
+    "src/index.tsx",
+    "docs/superpowers/specs/2026-04-21-sgc-tech-ai-video-design.md",
+    "public/assets/voiceover-transcript.json",
+    "scripts/build-template.cjs"
+  ]
+}

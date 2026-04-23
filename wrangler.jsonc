@@ -7,11 +7,11 @@
     "nodejs_compat"
   ]
   // "vars": {
-  //   "MY_VAR": "my-variable"
+  //   "ADMIN_TOKEN": "set-a-strong-admin-token"
   // },
   // "kv_namespaces": [
   //   {
-  //     "binding": "MY_KV_NAMESPACE",
+  //     "binding": "AIRA_BRAIN_KV",
   //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   //   }
   // ],

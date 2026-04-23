@@ -5,7 +5,7 @@ import {
   IconHealthcare, IconFinance, IconRetail, IconManufacturing,
   IconLogistics, IconEducation, IconLegal, IconRealestate,
   IconSpeed, IconShield, IconIntegration, IconCpu, IconChart, IconHeadset,
-  IconTwitter, IconLinkedin, IconGithub, IconYoutube,
+  IconTwitter, IconLinkedin, IconGithub, IconYoutube, IconMessage,
 } from './components/Icons'
 import { AwardBadges } from './components/AwardBadges'
 import { CircuitBg } from './components/CircuitBg'
@@ -13,6 +13,8 @@ import { CircuitBg } from './components/CircuitBg'
 const app = new Hono()
 
 app.use(renderer)
+
+const BOOK_DEMO_URL = 'https://app.cal.com/sgctech'
 
 /* ---------- Data ---------- */
 
@@ -26,6 +28,26 @@ const industries = [
   { name: 'Legal',         desc: 'Contract review, case research, discovery acceleration.',   Icon: IconLegal },
   { name: 'Real Estate',   desc: 'Valuation models, tenant screening, deal intelligence.',    Icon: IconRealestate },
 ]
+
+const airaVoiceAgentData = {
+  assistant: 'Aira',
+  platform: 'OpenClaw / SGC TECH AI',
+  channels: ['voice agent', 'chatbot'],
+  actions: ['book demo', 'escalate to human specialist'],
+  bookingUrl: BOOK_DEMO_URL,
+  capabilities: [
+    'Predict & simulate outcomes before action',
+    'Connect & integrate across 200+ systems (1000+ business capabilities narrative)',
+    'Pull & analyze data in real time',
+    'Generate leads and answer customer questions',
+    'Book appointments automatically',
+    'Trigger intelligent workflow automation 24/7',
+    'Track ROI with observability and tracing',
+    'Support regulated environments with SOC 2, GDPR, and HIPAA-ready posture',
+  ],
+  industries: industries.map((industry) => industry.name),
+  support: '24/7 priority support with dedicated solutions engineer',
+}
 
 const values = [
   { num: '01', title: 'Rapid Deployment', text: 'From kick-off to live production in under 30 days. No six-month pilots, no endless scoping. Fixed scope, fixed price.', Icon: IconSpeed },
@@ -221,6 +243,338 @@ const faqs = [
   },
 ]
 
+/* ---------- Aira Memory API ---------- */
+
+app.get('/api/aira/memory', async (c) => {
+  const sessionId = c.req.query('sessionId')?.trim()
+  if (!sessionId) {
+    return c.json({ ok: false, error: 'sessionId is required' }, 400)
+  }
+
+  const kv = (c.env as any)?.AIRA_BRAIN_KV
+  if (!kv || typeof kv.get !== 'function') {
+    return c.json({
+      ok: false,
+      error: 'AIRA_BRAIN_KV binding is missing',
+      pending: [
+        'Create a Cloudflare KV namespace',
+        'Bind it in wrangler.jsonc as AIRA_BRAIN_KV',
+        'Deploy with the binding available in this environment',
+      ],
+    }, 503)
+  }
+
+  const key = `aira:session:${sessionId}`
+  const data = await kv.get(key, { type: 'json' })
+  return c.json({ ok: true, data: data ?? null })
+})
+
+app.post('/api/aira/memory', async (c) => {
+  let body: any = null
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ ok: false, error: 'Invalid JSON body' }, 400)
+  }
+
+  const sessionId = typeof body?.sessionId === 'string' ? body.sessionId.trim() : ''
+  if (!sessionId || sessionId.length > 128) {
+    return c.json({ ok: false, error: 'sessionId must be a non-empty string up to 128 chars' }, 400)
+  }
+
+  const kv = (c.env as any)?.AIRA_BRAIN_KV
+  if (!kv || typeof kv.put !== 'function') {
+    return c.json({
+      ok: false,
+      error: 'AIRA_BRAIN_KV binding is missing',
+      pending: [
+        'Create a Cloudflare KV namespace',
+        'Bind it in wrangler.jsonc as AIRA_BRAIN_KV',
+        'Deploy with the binding available in this environment',
+      ],
+    }, 503)
+  }
+
+  const now = new Date().toISOString()
+  const key = `aira:session:${sessionId}`
+  const existing = await kv.get(key, { type: 'json' })
+
+  const payload = {
+    sessionId,
+    history: Array.isArray(body?.history) ? body.history.slice(-120) : [],
+    events: Array.isArray(body?.events) ? body.events.slice(-300) : [],
+    brainState: typeof body?.brainState === 'object' && body?.brainState !== null ? body.brainState : null,
+    createdAt: (existing as any)?.createdAt ?? now,
+    updatedAt: now,
+  }
+
+  await kv.put(key, JSON.stringify(payload), {
+    expirationTtl: 60 * 60 * 24 * 90,
+    metadata: {
+      updatedAt: now,
+      leadScore: (payload as any)?.brainState?.leadScore ?? 0,
+      turns: (payload as any)?.brainState?.turns ?? 0,
+      messageCount: Array.isArray(payload.history) ? payload.history.length : 0,
+    },
+  })
+
+  return c.json({ ok: true, saved: true, updatedAt: now })
+})
+
+const isAdminAuthorized = (c: any) => {
+  const requiredToken = (c.env as any)?.ADMIN_TOKEN
+  if (!requiredToken) return true
+
+  const queryToken = c.req.query('token')
+  const headerToken = c.req.header('x-admin-token')
+  return queryToken === requiredToken || headerToken === requiredToken
+}
+
+app.get('/api/admin/aira/sessions', async (c) => {
+  if (!isAdminAuthorized(c)) {
+    return c.json({ ok: false, error: 'Unauthorized' }, 401)
+  }
+
+  const kv = (c.env as any)?.AIRA_BRAIN_KV
+  if (!kv || typeof kv.list !== 'function') {
+    return c.json({
+      ok: false,
+      error: 'AIRA_BRAIN_KV binding is missing',
+    }, 503)
+  }
+
+  const limit = Math.min(Number(c.req.query('limit') || 20), 50)
+  const cursor = c.req.query('cursor') || undefined
+  const includeDetail = c.req.query('detail') === 'true'
+
+  const listed = await kv.list({
+    prefix: 'aira:session:',
+    limit,
+    cursor,
+  })
+
+  const sessions = await Promise.all(listed.keys.map(async (k: any) => {
+    const sessionId = String(k.name).replace('aira:session:', '')
+    const meta = (k as any).metadata || {}
+
+    let detail: any = null
+    if (includeDetail) {
+      detail = await kv.get(k.name, { type: 'json' })
+    }
+
+    if (!includeDetail && !meta.updatedAt) {
+      const raw = await kv.get(k.name, { type: 'json' })
+      if (raw) {
+        return {
+          sessionId,
+          updatedAt: (raw as any).updatedAt ?? null,
+          leadScore: (raw as any)?.brainState?.leadScore ?? 0,
+          turns: (raw as any)?.brainState?.turns ?? 0,
+          messageCount: Array.isArray((raw as any)?.history) ? (raw as any).history.length : 0,
+          summary: {
+            company: (raw as any)?.brainState?.profile?.company ?? '',
+            role: (raw as any)?.brainState?.profile?.role ?? '',
+            lastIntent: (raw as any)?.brainState?.lastIntent ?? '',
+          },
+        }
+      }
+    }
+
+    return {
+      sessionId,
+      updatedAt: meta.updatedAt ?? null,
+      leadScore: meta.leadScore ?? 0,
+      turns: meta.turns ?? 0,
+      messageCount: meta.messageCount ?? 0,
+      summary: detail ? {
+        company: detail?.brainState?.profile?.company ?? '',
+        role: detail?.brainState?.profile?.role ?? '',
+        lastIntent: detail?.brainState?.lastIntent ?? '',
+      } : null,
+      detail: includeDetail ? detail : undefined,
+    }
+  }))
+
+  sessions.sort((a, b) => {
+    const da = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
+    const db = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
+    return db - da
+  })
+
+  return c.json({
+    ok: true,
+    sessions,
+    cursor: listed.cursor,
+    listComplete: listed.list_complete,
+  })
+})
+
+app.get('/api/admin/aira/session/:sessionId', async (c) => {
+  if (!isAdminAuthorized(c)) {
+    return c.json({ ok: false, error: 'Unauthorized' }, 401)
+  }
+
+  const kv = (c.env as any)?.AIRA_BRAIN_KV
+  if (!kv || typeof kv.get !== 'function') {
+    return c.json({ ok: false, error: 'AIRA_BRAIN_KV binding is missing' }, 503)
+  }
+
+  const sessionId = c.req.param('sessionId')?.trim()
+  if (!sessionId) {
+    return c.json({ ok: false, error: 'sessionId is required' }, 400)
+  }
+
+  const key = `aira:session:${sessionId}`
+  const detail = await kv.get(key, { type: 'json' })
+  if (!detail) {
+    return c.json({ ok: false, error: 'Session not found' }, 404)
+  }
+
+  return c.json({ ok: true, sessionId, detail })
+})
+
+app.get('/admin/aira-memory', async (c) => {
+  if (!isAdminAuthorized(c)) {
+    return c.text('Unauthorized. Provide ?token=YOUR_ADMIN_TOKEN', 401)
+  }
+
+  return c.render(
+    <main style="padding: 6rem 1.2rem 2rem; max-width: 1100px; margin: 0 auto;">
+      <section class="glass" style="padding: 1.25rem; border-radius: 16px;">
+        <h1 style="font-size: 1.6rem; margin-bottom: 0.4rem;">Aira Conversation Dashboard</h1>
+        <p style="margin-bottom: 1rem; color: var(--gray-300);">Read recent conversations, lead scores, and session context.</p>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.9rem;">
+          <button id="refreshBtn" class="btn btn-primary" style="padding: 0.55rem 1rem;">Refresh</button>
+          <button id="loadMoreBtn" class="btn btn-ghost" style="padding: 0.55rem 1rem;">Load more</button>
+          <span id="adminStatus" style="align-self: center; color: var(--gray-400);">Loading sessions...</span>
+        </div>
+        <div style="overflow: auto; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;">
+          <table style="width: 100%; border-collapse: collapse; min-width: 920px;">
+            <thead>
+              <tr style="text-align: left; background: rgba(255,255,255,0.03);">
+                <th style="padding: 0.65rem;">Session</th>
+                <th style="padding: 0.65rem;">Updated</th>
+                <th style="padding: 0.65rem;">Lead Score</th>
+                <th style="padding: 0.65rem;">Turns</th>
+                <th style="padding: 0.65rem;">Messages</th>
+                <th style="padding: 0.65rem;">Company</th>
+                <th style="padding: 0.65rem;">Role</th>
+                <th style="padding: 0.65rem;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="sessionsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="glass" style="padding: 1.25rem; border-radius: 16px; margin-top: 1rem;">
+        <h2 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Conversation Detail</h2>
+        <pre id="sessionDetail" style="white-space: pre-wrap; margin: 0; color: var(--gray-100); max-height: 420px; overflow: auto;"></pre>
+      </section>
+
+      <script>{`
+        (() => {
+          const state = { cursor: '', token: new URLSearchParams(window.location.search).get('token') || '' }
+          const body = document.getElementById('sessionsBody')
+          const detail = document.getElementById('sessionDetail')
+          const status = document.getElementById('adminStatus')
+          const refreshBtn = document.getElementById('refreshBtn')
+          const loadMoreBtn = document.getElementById('loadMoreBtn')
+
+          const fmtDate = (v) => {
+            if (!v) return '-'
+            const d = new Date(v)
+            return Number.isNaN(d.getTime()) ? '-' : d.toLocaleString()
+          }
+
+          const esc = (v) => String(v || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]))
+
+          const buildUrl = (cursor = '', detailMode = false) => {
+            const q = new URLSearchParams()
+            q.set('limit', '20')
+            if (cursor) q.set('cursor', cursor)
+            if (detailMode) q.set('detail', 'true')
+            if (state.token) q.set('token', state.token)
+            return '/api/admin/aira/sessions?' + q.toString()
+          }
+
+          const loadSessions = async (append = false) => {
+            status.textContent = 'Loading sessions...'
+            try {
+              const res = await fetch(buildUrl(append ? state.cursor : ''))
+              const payload = await res.json()
+              if (!res.ok || !payload.ok) {
+                status.textContent = payload.error || 'Failed to load sessions.'
+                return
+              }
+
+              if (!append) body.innerHTML = ''
+
+              payload.sessions.forEach((s) => {
+                const tr = document.createElement('tr')
+                tr.innerHTML = 
+                  '<td style="padding:0.6rem;">' + esc(s.sessionId) + '</td>' +
+                  '<td style="padding:0.6rem;">' + esc(fmtDate(s.updatedAt)) + '</td>' +
+                  '<td style="padding:0.6rem;">' + esc(s.leadScore) + '</td>' +
+                  '<td style="padding:0.6rem;">' + esc(s.turns) + '</td>' +
+                  '<td style="padding:0.6rem;">' + esc(s.messageCount) + '</td>' +
+                  '<td style="padding:0.6rem;">' + esc(s.summary?.company || '-') + '</td>' +
+                  '<td style="padding:0.6rem;">' + esc(s.summary?.role || '-') + '</td>' +
+                  '<td style="padding:0.6rem;"><button data-session="' + esc(s.sessionId) + '" class="btn btn-ghost" style="padding:0.35rem 0.65rem;">View</button></td>'
+                body.appendChild(tr)
+              })
+
+              state.cursor = payload.cursor || ''
+              loadMoreBtn.disabled = !!payload.listComplete
+              status.textContent = 'Loaded ' + payload.sessions.length + ' sessions.'
+            } catch (err) {
+              status.textContent = 'Error loading sessions.'
+            }
+          }
+
+          const loadSessionDetail = async (sessionId) => {
+            status.textContent = 'Loading detail for ' + sessionId + '...'
+            try {
+              const q = new URLSearchParams()
+              if (state.token) q.set('token', state.token)
+              const res = await fetch('/api/admin/aira/session/' + encodeURIComponent(sessionId) + (q.toString() ? ('?' + q.toString()) : ''))
+              const payload = await res.json()
+              if (!res.ok || !payload.ok) {
+                status.textContent = payload.error || 'Failed to load detail.'
+                return
+              }
+              detail.textContent = JSON.stringify(payload.detail || { message: 'No detail found.' }, null, 2)
+              status.textContent = 'Detail loaded for ' + sessionId + '.'
+            } catch {
+              status.textContent = 'Error loading detail.'
+            }
+          }
+
+          body.addEventListener('click', (e) => {
+            const target = e.target
+            if (!(target instanceof HTMLElement)) return
+            const sessionId = target.getAttribute('data-session')
+            if (!sessionId) return
+            loadSessionDetail(sessionId)
+          })
+
+          refreshBtn.addEventListener('click', () => {
+            state.cursor = ''
+            loadSessions(false)
+          })
+
+          loadMoreBtn.addEventListener('click', () => {
+            if (!state.cursor) return
+            loadSessions(true)
+          })
+
+          loadSessions(false)
+        })()
+      `}</script>
+    </main>
+  )
+})
+
 /* ---------- Page ---------- */
 
 app.get('/', (c) => {
@@ -243,7 +597,7 @@ app.get('/', (c) => {
           </ul>
           <div class="nav-cta">
             <a href="https://scholarixglobal.com/web/login" class="btn btn-ghost" style="padding: 0.55rem 1.1rem;" target="_blank" rel="noopener noreferrer">Sign in</a>
-            <a href="#pricing" class="btn btn-primary" style="padding: 0.55rem 1.1rem;" data-magnetic>
+            <a href={BOOK_DEMO_URL} class="btn btn-primary" style="padding: 0.55rem 1.1rem;" data-magnetic target="_blank" rel="noopener noreferrer">
               Book Demo <IconArrow />
             </a>
             <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
@@ -454,7 +808,13 @@ app.get('/', (c) => {
                     ))}
                   </ul>
 
-                  <a href="#contact" class={`btn ${p.featured ? 'btn-primary' : 'btn-ghost'}`} data-magnetic>
+                  <a
+                    href={p.cta.toLowerCase() === 'book a demo' ? BOOK_DEMO_URL : '#contact'}
+                    class={`btn ${p.featured ? 'btn-primary' : 'btn-ghost'}`}
+                    data-magnetic
+                    target={p.cta.toLowerCase() === 'book a demo' ? '_blank' : undefined}
+                    rel={p.cta.toLowerCase() === 'book a demo' ? 'noopener noreferrer' : undefined}
+                  >
                     {p.cta} <IconArrow />
                   </a>
                 </article>
@@ -612,7 +972,7 @@ app.get('/', (c) => {
                   <p class="lead">Book a 30-minute scoping call. We'll walk through your highest-leverage workflow and map out exactly what your first 30 days look like — week by week.</p>
                 </div>
                 <div class="cta-buttons">
-                  <a href="#" class="btn btn-primary" data-magnetic>
+                  <a href={BOOK_DEMO_URL} class="btn btn-primary" data-magnetic target="_blank" rel="noopener noreferrer">
                     Book a 30-min call <IconArrow />
                   </a>
                   <a href="#pricing" class="btn btn-ghost">
@@ -625,6 +985,82 @@ app.get('/', (c) => {
           </div>
         </section>
       </main>
+
+      <div
+        class="aira-chatbox"
+        data-booking-url={BOOK_DEMO_URL}
+        data-alert-phone="971563905772"
+        data-memory-api="/api/aira/memory"
+      >
+        <button
+          type="button"
+          class="floating-message-btn"
+          data-chat-launcher
+          aria-label="Open Aira chat assistant"
+          aria-expanded="false"
+          title={JSON.stringify(airaVoiceAgentData)}
+        >
+          <IconMessage />
+          <span>Message Aira</span>
+        </button>
+
+        <section class="aira-chat-panel" data-chat-panel hidden>
+          <header class="aira-chat-header">
+            <p class="aira-chat-eyebrow">Aira Sales Assistant</p>
+            <button type="button" class="aira-chat-close" data-chat-close aria-label="Close chatbox">x</button>
+          </header>
+
+          <div class="aira-chat-body">
+            <p class="aira-chat-welcome">
+              Welcome to SGC TECH AI. We help B2B teams cut operational cost, automate workflows, and deploy production AI in as little as 30 days.
+            </p>
+
+            <div class="aira-mode-switch" role="tablist" aria-label="Assistant mode">
+              <button type="button" class="aira-mode-btn active" data-mode="chat" role="tab" aria-selected="true">Chat</button>
+              <button type="button" class="aira-mode-btn" data-mode="voice" role="tab" aria-selected="false">Voice</button>
+            </div>
+
+            <p class="aira-mode-copy" data-mode-copy>
+              Chat mode is active. Ask pricing, integrations, or use the quick actions below.
+            </p>
+
+            <div class="aira-chat-log" data-chat-log aria-live="polite" aria-label="Aira conversation history"></div>
+
+            <form class="aira-chat-form" data-chat-form>
+              <input
+                type="text"
+                class="aira-chat-input"
+                data-chat-input
+                placeholder="Type your message..."
+                autocomplete="off"
+              />
+              <button type="submit" class="aira-chat-send">Send</button>
+            </form>
+
+            <div class="aira-quick-actions">
+              <a href={BOOK_DEMO_URL} target="_blank" rel="noopener noreferrer" class="aira-quick-btn" data-book-demo>
+                Book Demo
+              </a>
+              <button type="button" class="aira-quick-btn aira-quick-human" data-talk-human>
+                Talk to Human
+              </button>
+            </div>
+
+            <div class="aira-alert-links" data-alert-links hidden>
+              <a href="#" target="_blank" rel="noopener noreferrer" class="aira-alert-btn" data-alert-whatsapp>
+                Use WhatsApp
+              </a>
+              <a href="#" target="_blank" rel="noopener noreferrer" class="aira-alert-btn" data-alert-telegram>
+                Use Telegram
+              </a>
+            </div>
+
+            <p class="aira-alert-status" data-alert-status aria-live="polite"></p>
+            <p class="aira-recording-note">Conversation and AI memory are recorded in browser storage on this device.</p>
+            <p class="aira-sync-note" data-sync-status aria-live="polite">Central memory sync: checking...</p>
+          </div>
+        </section>
+      </div>
 
       {/* ============== FOOTER ============== */}
       <footer>
@@ -684,6 +1120,431 @@ app.get('/', (c) => {
         </div>
       </footer>
     </>
+  )
+})
+
+/* ---------- SEO Routes ---------- */
+
+app.get('/sitemap.xml', async (c) => {
+  c.header('Content-Type', 'application/xml; charset=utf-8')
+  return c.text(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Homepage - Main Entry Point -->
+  <url>
+    <loc>https://sgctech.ai</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Homepage Sections -->
+  <url>
+    <loc>https://sgctech.ai/#top</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- Industries Section -->
+  <url>
+    <loc>https://sgctech.ai/#industries</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/healthcare-hospital.jpg</image:loc>
+      <image:title>Healthcare Hospital Operations</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/manufacturing-mrp.jpg</image:loc>
+      <image:title>Manufacturing MRP Shop Floor</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/retail-pos.jpg</image:loc>
+      <image:title>Retail Unified Commerce</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/construction-boq.jpg</image:loc>
+      <image:title>Construction BoQ Progress Billing</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/logistics-warehouse.jpg</image:loc>
+      <image:title>Logistics Warehouse Customs</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/realestate-crm.jpg</image:loc>
+      <image:title>Real Estate Property CRM</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/education-lms.jpg</image:loc>
+      <image:title>Education LMS Live Classrooms</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/hospitality-hotel.jpg</image:loc>
+      <image:title>Hospitality Hotel PMS</image:title>
+    </image:image>
+  </url>
+
+  <!-- Why SGC Tech AI Section -->
+  <url>
+    <loc>https://sgctech.ai/#why</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- Pricing Section -->
+  <url>
+    <loc>https://sgctech.ai/#pricing</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- Testimonials/Customers Section -->
+  <url>
+    <loc>https://sgctech.ai/#testimonials</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- Case Studies/Stories Section -->
+  <url>
+    <loc>https://sgctech.ai/#stories</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- FAQ Section -->
+  <url>
+    <loc>https://sgctech.ai/#faq</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://sgctech.ai/privacy</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.40</priority>
+  </url>
+
+  <url>
+    <loc>https://sgctech.ai/terms</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.40</priority>
+  </url>
+
+  <url>
+    <loc>https://sgctech.ai/security</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.40</priority>
+  </url>
+
+</urlset>`)
+})
+
+app.get('/robots.txt', (c) => {
+  c.header('Content-Type', 'text/plain; charset=utf-8')
+  return c.text(`# robots.txt - SGC Tech AI
+# Search engine crawler directives
+
+# Allow all crawlers to index the site
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Point to sitemap
+Sitemap: https://sgctech.ai/sitemap.xml
+
+# Crawl delay (in seconds)
+Crawl-delay: 1
+`)
+})
+
+/* ---------- Legal Pages ---------- */
+
+app.get('/terms', (c) => {
+  return c.render(
+    <main style="padding: 2rem 1.2rem; max-width: 900px; margin: 0 auto;">
+      <header style="margin-bottom: 2rem;">
+        <a href="/" style="display: inline-block; margin-bottom: 1rem; color: var(--cyan); text-decoration: none;">← Back to home</a>
+        <h1>Terms of Service</h1>
+        <p style="color: var(--gray-300); font-size: 0.9rem;">Last updated: April 23, 2026</p>
+      </header>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing and using sgctech.ai (the "Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>2. Use License</h2>
+        <p>Permission is granted to temporarily download one copy of the materials (information or software) on sgctech.ai for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li>Modify or copy the materials</li>
+          <li>Use the materials for any commercial purpose or for any public display (commercial or non-commercial)</li>
+          <li>Attempt to decompile or reverse engineer any software contained on sgctech.ai</li>
+          <li>Remove any copyright or other proprietary notations from the materials</li>
+          <li>Transfer the materials to another person or "mirror" the materials on any other server</li>
+          <li>Violate any applicable laws or regulations related to access to or use of sgctech.ai</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>3. Disclaimer</h2>
+        <p>The materials on sgctech.ai are provided "as is". We make no warranties, expressed or implied, and hereby disclaim and negate all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>4. Limitations</h2>
+        <p>In no event shall sgctech.ai or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on sgctech.ai, even if we or our authorized representative has been notified orally or in writing of the possibility of such damage.</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>5. Accuracy of Materials</h2>
+        <p>The materials appearing on sgctech.ai could include technical, typographical, or photographic errors. We do not warrant that any of the materials on sgctech.ai are accurate, complete, or current. We may make changes to the materials contained on sgctech.ai at any time without notice.</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>6. Links</h2>
+        <p>We have not reviewed all of the sites linked to our website and are not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by us of the site. Use of any such linked website is at the user's own risk.</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>7. Modifications</h2>
+        <p>We may revise these terms of service for sgctech.ai at any time without notice. By using this website, you are agreeing to be bound by the then current version of these terms of service.</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>8. Governing Law</h2>
+        <p>These terms and conditions are governed by and construed in accordance with the laws of the United States, and you irrevocably submit to the exclusive jurisdiction of the courts in that location.</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 3rem;">
+        <h2>9. Contact</h2>
+        <p>If you have any questions about these Terms of Service, please contact us at <strong>legal@sgctech.ai</strong></p>
+      </section>
+    </main>
+  )
+})
+
+app.get('/privacy', (c) => {
+  return c.render(
+    <main style="padding: 2rem 1.2rem; max-width: 900px; margin: 0 auto;">
+      <header style="margin-bottom: 2rem;">
+        <a href="/" style="display: inline-block; margin-bottom: 1rem; color: var(--cyan); text-decoration: none;">← Back to home</a>
+        <h1>Privacy Policy</h1>
+        <p style="color: var(--gray-300); font-size: 0.9rem;">Last updated: April 23, 2026</p>
+      </header>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>1. Introduction</h2>
+        <p>SGC Tech AI ("we," "us," "our," or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website sgctech.ai (the "Site").</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>2. Information We Collect</h2>
+        <p>We may collect information about you in a variety of ways. The information we may collect on the Site includes:</p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li><strong>Personal Data:</strong> Name, email address, phone number, company name, and job title when you submit forms or contact us</li>
+          <li><strong>Usage Data:</strong> Information about how you interact with our Site, including pages visited, time spent, and links clicked</li>
+          <li><strong>Device Data:</strong> Information about your browser, device type, operating system, and IP address</li>
+          <li><strong>Cookies:</strong> We use cookies and similar tracking technologies to enhance your experience</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>3. Use of Your Information</h2>
+        <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Site to:</p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li>Respond to your inquiries and fulfill requests</li>
+          <li>Send promotional and marketing communications (with your consent)</li>
+          <li>Improve and optimize our Site and services</li>
+          <li>Analyze usage trends and gather demographic information</li>
+          <li>Comply with legal obligations</li>
+          <li>Prevent fraud and enhance security</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>4. Disclosure of Your Information</h2>
+        <p>We may share information we have collected about you in certain situations:</p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li><strong>Service Providers:</strong> We may share your information with third parties that perform services on our behalf</li>
+          <li><strong>Legal Requirements:</strong> We may disclose your information where required by law</li>
+          <li><strong>Business Transfers:</strong> Your information may be transferred as part of a merger, acquisition, or sale of assets</li>
+          <li><strong>Your Consent:</strong> We may disclose your information with your explicit consent</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>5. Security of Your Information</h2>
+        <p>We use administrative, technical, and physical security measures to protect your personal information. These include encryption, firewalls, and secure server protocols. However, no method of transmission over the Internet is 100% secure.</p>
+        <p style="margin-top: 1rem;"><strong>Our Security Certifications:</strong></p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li>SOC 2 Type II Compliant</li>
+          <li>GDPR Compliant</li>
+          <li>HIPAA Eligible (for healthcare customers)</li>
+          <li>ISO 27001 Certified</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>6. Contact Information</h2>
+        <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+        <p style="margin-top: 1rem;">
+          <strong>Email:</strong> privacy@sgctech.ai<br/>
+          <strong>Address:</strong> SGC Tech AI<br/>
+          <strong>Response time:</strong> Within 48 hours
+        </p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 3rem;">
+        <h2>7. GDPR & Data Subject Rights</h2>
+        <p>If you are an EU resident, you have the right to:</p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li>Access your personal data</li>
+          <li>Rectify inaccurate data</li>
+          <li>Request deletion of your data</li>
+          <li>Restrict processing</li>
+          <li>Data portability</li>
+          <li>Withdraw consent</li>
+        </ul>
+        <p style="margin-top: 1rem;">To exercise these rights, please contact us at privacy@sgctech.ai</p>
+      </section>
+    </main>
+  )
+})
+
+app.get('/security', (c) => {
+  return c.render(
+    <main style="padding: 2rem 1.2rem; max-width: 900px; margin: 0 auto;">
+      <header style="margin-bottom: 2rem;">
+        <a href="/" style="display: inline-block; margin-bottom: 1rem; color: var(--cyan); text-decoration: none;">← Back to home</a>
+        <h1>Security & Compliance</h1>
+        <p style="color: var(--gray-300); font-size: 0.9rem;">Last updated: April 23, 2026</p>
+      </header>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Enterprise-Grade Security</h2>
+        <p>SGC Tech AI is built for regulated enterprises. Security and compliance are baked into every layer of our platform — from infrastructure to API design to data handling.</p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Certifications & Compliance</h2>
+        <div style="display: grid; gap: 1rem;">
+          <div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--cyan);">SOC 2 Type II</h3>
+            <p style="margin: 0;">Independently audited. Demonstrates controls over security, availability, processing integrity, confidentiality, and privacy.</p>
+          </div>
+          <div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--cyan);">GDPR Compliant</h3>
+            <p style="margin: 0;">Full compliance with EU data protection regulation. Data residency controls, DPA framework, and DPIA support included.</p>
+          </div>
+          <div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--cyan);">HIPAA Eligible</h3>
+            <p style="margin: 0;">For healthcare customers. BAA available. Encryption at rest and in transit. Audit logs and access controls.</p>
+          </div>
+          <div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--cyan);">ISO 27001</h3>
+            <p style="margin: 0;">Information security management system certified. Covers access controls, incident management, and risk assessment.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Data Protection</h2>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li><strong>Encryption at Rest:</strong> AES-256 encryption for all stored data</li>
+          <li><strong>Encryption in Transit:</strong> TLS 1.3 for all data transfers</li>
+          <li><strong>Key Management:</strong> Cloudflare Key Management Service (KMS)</li>
+          <li><strong>Data Residency:</strong> EU, US, and APAC region options</li>
+          <li><strong>Backup & Recovery:</strong> Automated daily backups, 90-day retention</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Access Controls</h2>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li><strong>Role-Based Access Control (RBAC):</strong> Admin, operator, viewer, and custom roles</li>
+          <li><strong>Multi-Factor Authentication (MFA):</strong> Mandatory for all production accounts</li>
+          <li><strong>Session Management:</strong> Automatic logout after 30 minutes of inactivity</li>
+          <li><strong>Audit Logging:</strong> All access logged with timestamps and IP addresses</li>
+          <li><strong>Single Sign-On (SSO):</strong> SAML 2.0 and OAuth 2.0 support</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Infrastructure Security</h2>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li><strong>Cloud Provider:</strong> Cloudflare Workers + Cloudflare Pages (SOC 2 certified)</li>
+          <li><strong>DDoS Protection:</strong> Automatic DDoS mitigation at edge</li>
+          <li><strong>WAF Rules:</strong> OWASP Top 10 protection enabled</li>
+          <li><strong>API Security:</strong> Rate limiting, JWT validation, CORS enforcement</li>
+          <li><strong>CDN:</strong> Global edge caching with automatic failover</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Incident Response</h2>
+        <p><strong>Response Time:</strong> Critical incidents acknowledged within 1 hour, updates every 4 hours</p>
+        <p style="margin-top: 0.5rem;"><strong>Process:</strong></p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li>24/7 security monitoring</li>
+          <li>Incident triage and severity classification</li>
+          <li>Customer notification within SLA timeframe</li>
+          <li>Post-incident review and remediation</li>
+          <li>Regular security drills</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Vulnerability Management</h2>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li><strong>Regular Scans:</strong> Automated vulnerability scanning (OWASP ZAP, Nessus)</li>
+          <li><strong>Penetration Testing:</strong> Third-party pen tests quarterly</li>
+          <li><strong>Security Updates:</strong> Patches deployed within 24-48 hours of disclosure</li>
+          <li><strong>Responsible Disclosure:</strong> Bug bounty program available (contact security@sgctech.ai)</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Uptime & SLA</h2>
+        <p><strong>Guaranteed Uptime:</strong> 99.9% (3 nines) for production environments</p>
+        <p style="margin-top: 0.5rem;"><strong>SLA Terms:</strong></p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+          <li>99.9% - 0.1% credit applied to next month</li>
+          <li>99.0% - 1% credit applied to next month</li>
+          <li>Below 99.0% - 10% credit applied to next month</li>
+        </ul>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h2>Contact Security</h2>
+        <p>For security concerns or to report a vulnerability:</p>
+        <p style="margin-top: 1rem;">
+          <strong>Email:</strong> security@sgctech.ai<br/>
+          <strong>Response time:</strong> Within 24 hours<br/>
+          <strong>Bug Bounty:</strong> Available for verified security researchers
+        </p>
+      </section>
+
+      <section class="glass" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 3rem;">
+        <h2>Request Our SOC 2 Report</h2>
+        <p>Customers and prospects can request our latest SOC 2 Type II audit report. This is typically provided under NDA.</p>
+        <p style="margin-top: 1rem;"><a href="https://app.cal.com/sgctech" style="color: var(--cyan); text-decoration: none;">Schedule a compliance review call →</a></p>
+      </section>
+    </main>
   )
 })
 

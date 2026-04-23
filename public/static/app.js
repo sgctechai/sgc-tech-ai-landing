@@ -598,4 +598,510 @@
     };
     attempt();
   })();
+
+  // =====================================================================
+  // AIRA CHATBOX — mode switch + quick actions + human alert handoff
+  // =====================================================================
+  function initAiraChatbox() {
+    const root = document.querySelector('.aira-chatbox');
+    if (!root) return;
+
+    const launcher = root.querySelector('[data-chat-launcher]');
+    const panel = root.querySelector('[data-chat-panel]');
+    const closeBtn = root.querySelector('[data-chat-close]');
+    const modeBtns = Array.from(root.querySelectorAll('[data-mode]'));
+    const modeCopy = root.querySelector('[data-mode-copy]');
+    const talkBtn = root.querySelector('[data-talk-human]');
+    const alertLinksWrap = root.querySelector('[data-alert-links]');
+    const alertWhatsapp = root.querySelector('[data-alert-whatsapp]');
+    const alertTelegram = root.querySelector('[data-alert-telegram]');
+    const alertStatus = root.querySelector('[data-alert-status]');
+    const chatLog = root.querySelector('[data-chat-log]');
+    const chatForm = root.querySelector('[data-chat-form]');
+    const chatInput = root.querySelector('[data-chat-input]');
+    const syncStatus = root.querySelector('[data-sync-status]');
+
+    if (!launcher || !panel || !closeBtn || !modeBtns.length || !modeCopy || !talkBtn || !alertLinksWrap || !alertWhatsapp || !alertTelegram || !alertStatus || !chatLog || !chatForm || !chatInput) {
+      return;
+    }
+
+    const bookingUrl = root.getAttribute('data-booking-url') || 'https://app.cal.com/sgctech';
+    const alertPhone = root.getAttribute('data-alert-phone') || '971563905772';
+    const memoryApi = root.getAttribute('data-memory-api') || '/api/aira/memory';
+    const storageKey = 'aira-chat-history-v1';
+    const eventKey = 'aira-chat-events-v1';
+    const brainKey = 'aira-brain-state-v1';
+    const sessionKey = 'aira-session-id-v1';
+
+    const sessionId = getOrCreateSessionId();
+    const history = loadStorage(storageKey);
+    const events = loadStorage(eventKey);
+    const brain = loadStorage(brainKey);
+
+    let syncTimer = null;
+    let syncInFlight = false;
+    let syncQueued = false;
+
+    function loadStorage(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveStorage(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (_) {}
+    }
+
+    function getOrCreateSessionId() {
+      try {
+        const current = localStorage.getItem(sessionKey);
+        if (current) return current;
+        const generated = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : ('sess-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+        localStorage.setItem(sessionKey, generated);
+        return generated;
+      } catch (_) {
+        return 'sess-' + Date.now();
+      }
+    }
+
+    function setSyncStatus(text, level) {
+      if (!syncStatus) return;
+      syncStatus.textContent = text;
+      syncStatus.classList.remove('ok', 'warn', 'err');
+      if (level) syncStatus.classList.add(level);
+    }
+
+    function initBrainState() {
+      return {
+        visitorId: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
+        turns: 0,
+        leadScore: 0,
+        profile: {
+          name: '',
+          company: '',
+          role: '',
+          industry: '',
+          timeline: '',
+          budget: '',
+          stack: [],
+          goals: [],
+        },
+        intentCounts: {},
+        lastIntent: 'unknown',
+      }
+    }
+
+    const brainState = (brain && typeof brain === 'object') ? brain : initBrainState();
+
+    function queueCentralSync() {
+      if (syncTimer) clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => {
+        syncTimer = null;
+        flushCentralSync();
+      }, 700);
+    }
+
+    async function flushCentralSync() {
+      if (syncInFlight) {
+        syncQueued = true;
+        return;
+      }
+
+      syncInFlight = true;
+      try {
+        const res = await fetch(memoryApi, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            history,
+            events,
+            brainState,
+          }),
+        })
+
+        if (res.ok) {
+          setSyncStatus('Central memory synced.', 'ok');
+        } else {
+          setSyncStatus('Central memory sync pending KV configuration.', 'warn');
+        }
+      } catch (_) {
+        setSyncStatus('Central memory unavailable. Using local memory only.', 'warn');
+      } finally {
+        syncInFlight = false;
+        if (syncQueued) {
+          syncQueued = false;
+          queueCentralSync();
+        }
+      }
+    }
+
+    function mergeRemoteMemory(data) {
+      if (!data || typeof data !== 'object') return;
+
+      if (Array.isArray(data.history) && data.history.length) {
+        history.splice(0, history.length, ...data.history.slice(-120));
+        saveStorage(storageKey, history);
+      }
+
+      if (Array.isArray(data.events) && data.events.length) {
+        events.splice(0, events.length, ...data.events.slice(-300));
+        saveStorage(eventKey, events);
+      }
+
+      if (data.brainState && typeof data.brainState === 'object') {
+        const remoteBrain = data.brainState;
+        const mergedProfile = {
+          ...brainState.profile,
+          ...(remoteBrain.profile || {}),
+          stack: Array.isArray(remoteBrain.profile?.stack) ? remoteBrain.profile.stack.slice(0, 20) : brainState.profile.stack,
+          goals: Array.isArray(remoteBrain.profile?.goals) ? remoteBrain.profile.goals.slice(0, 20) : brainState.profile.goals,
+        };
+        Object.assign(brainState, remoteBrain, { profile: mergedProfile });
+        saveStorage(brainKey, brainState);
+      }
+    }
+
+    async function fetchCentralMemory() {
+      try {
+        const res = await fetch(memoryApi + '?sessionId=' + encodeURIComponent(sessionId));
+        if (!res.ok) {
+          setSyncStatus('Central memory sync pending KV configuration.', 'warn');
+          return;
+        }
+        const payload = await res.json();
+        if (payload?.ok && payload?.data) {
+          mergeRemoteMemory(payload.data);
+          setSyncStatus('Central memory sync connected.', 'ok');
+          renderHistory();
+        } else if (payload?.ok) {
+          setSyncStatus('Central memory ready. Starting new profile.', 'ok');
+        } else {
+          setSyncStatus('Central memory sync pending KV configuration.', 'warn');
+        }
+      } catch (_) {
+        setSyncStatus('Central memory unavailable. Using local memory only.', 'warn');
+      }
+    }
+
+    function appendEvent(type, detail) {
+      events.push({
+        type: type,
+        detail: detail,
+        at: new Date().toISOString(),
+      });
+      if (events.length > 200) events.splice(0, events.length - 200);
+      saveStorage(eventKey, events);
+      queueCentralSync();
+    }
+
+    function saveBrain() {
+      saveStorage(brainKey, brainState);
+      queueCentralSync();
+    }
+
+    function detectIntent(text) {
+      const t = text.toLowerCase();
+      const score = {
+        greeting: /(hello|hi|hey|good morning|good afternoon)/.test(t) ? 3 : 0,
+        booking: /(book|demo|call|meeting|schedule)/.test(t) ? 5 : 0,
+        pricing: /(price|pricing|cost|budget|quote)/.test(t) ? 5 : 0,
+        integrations: /(integrat|api|crm|erp|sap|salesforce|hubspot|slack|teams)/.test(t) ? 5 : 0,
+        compliance: /(security|soc|gdpr|hipaa|compliance|privacy)/.test(t) ? 5 : 0,
+        support: /(support|help|sla|response)/.test(t) ? 4 : 0,
+        timeline: /(timeline|when|how fast|days|weeks|month)/.test(t) ? 4 : 0,
+        human: /(human|specialist|sales rep|agent|person)/.test(t) ? 6 : 0,
+        capabilities: /(capab|automate|workflow|predict|analy|roi)/.test(t) ? 4 : 0,
+      };
+
+      let best = 'unknown';
+      let max = 0;
+      Object.keys(score).forEach((key) => {
+        if (score[key] > max) {
+          max = score[key];
+          best = key;
+        }
+      });
+      return best;
+    }
+
+    function extractProfile(text) {
+      const lower = text.toLowerCase();
+      const p = brainState.profile;
+
+      const nameMatch = text.match(/(?:my name is|i am)\s+([A-Za-z][A-Za-z\-']{1,24})/i);
+      if (nameMatch && !p.name) p.name = nameMatch[1];
+
+      const companyMatch = text.match(/(?:from|at)\s+([A-Za-z0-9][A-Za-z0-9&.,\-\s]{1,50})/i);
+      if (companyMatch && !p.company) p.company = companyMatch[1].trim();
+
+      const roleMatch = text.match(/(?:i am|i'm)\s+(?:a|an|the)?\s*([A-Za-z\s]{3,40})(?:\s+at|\s+from|\.|,|$)/i);
+      if (roleMatch && !p.role) {
+        const role = roleMatch[1].trim();
+        if (!/(interested|looking|need|from|at|ready)/i.test(role)) p.role = role;
+      }
+
+      const industries = ['healthcare', 'finance', 'retail', 'manufacturing', 'logistics', 'education', 'legal', 'real estate'];
+      industries.forEach((ind) => {
+        if (lower.includes(ind) && !p.industry) p.industry = ind;
+      });
+
+      const timelineMatch = text.match(/(\d+\s*(?:day|days|week|weeks|month|months))/i);
+      if (timelineMatch && !p.timeline) p.timeline = timelineMatch[1];
+
+      const budgetMatch = text.match(/(?:budget|range|spend)\s*(?:is|around|about)?\s*(\$?\s?[0-9.,]+\s*[kKmM]?)/i);
+      if (budgetMatch && !p.budget) p.budget = budgetMatch[1].replace(/\s+/g, ' ').trim();
+
+      const knownTools = ['salesforce', 'hubspot', 'sap', 'slack', 'teams', 'zendesk', 'shopify', 'snowflake'];
+      knownTools.forEach((tool) => {
+        if (lower.includes(tool) && !p.stack.includes(tool)) p.stack.push(tool);
+      });
+
+      const goalPhrases = ['reduce cost', 'save time', 'book more demos', 'automate workflows', 'improve support', 'increase conversion'];
+      goalPhrases.forEach((g) => {
+        if (lower.includes(g) && !p.goals.includes(g)) p.goals.push(g);
+      });
+    }
+
+    function updateLeadScore(intent) {
+      const p = brainState.profile;
+      const bumps = {
+        booking: 18,
+        pricing: 12,
+        integrations: 10,
+        capabilities: 7,
+        timeline: 6,
+        compliance: 8,
+        human: 10,
+        support: 5,
+      };
+      brainState.leadScore += bumps[intent] || 2;
+      if (p.company) brainState.leadScore += 2;
+      if (p.role) brainState.leadScore += 2;
+      if (p.timeline) brainState.leadScore += 2;
+      if (brainState.leadScore > 100) brainState.leadScore = 100;
+    }
+
+    function nextBestQuestion() {
+      const p = brainState.profile;
+      if (!p.company) return 'What company are you with so I can tailor a relevant rollout plan?';
+      if (!p.role) return 'What is your role in the buying process?';
+      if (!p.timeline) return 'What timeline are you targeting for go-live?';
+      if (!p.stack.length) return 'Which systems should Aira integrate first (CRM/ERP/support stack)?';
+      return 'Would you like me to move this to a booked demo or escalate directly to a human specialist?';
+    }
+
+    function buildResponse(intent) {
+      const p = brainState.profile;
+      const opener = p.name ? ('Thanks ' + p.name + '. ') : '';
+
+      if (intent === 'booking') {
+        return opener + 'Great choice. Use the Book Demo button below and we can map your first 30-day implementation plan.';
+      }
+      if (intent === 'human') {
+        return opener + 'Absolutely. Tap Talk to Human and choose WhatsApp or Telegram. I will prepare context for fast handoff.';
+      }
+      if (intent === 'pricing') {
+        return opener + 'We offer Starter, Professional, and Enterprise tiers. Pricing depends on scope, integrations, and compliance. ' + nextBestQuestion();
+      }
+      if (intent === 'integrations') {
+        const stack = p.stack.length ? (' I detected: ' + p.stack.join(', ') + '.') : '';
+        return opener + 'Aira supports 200+ integrations including Salesforce, HubSpot, SAP, Slack, Teams, and more.' + stack + ' ' + nextBestQuestion();
+      }
+      if (intent === 'compliance') {
+        return opener + 'Security posture includes SOC 2, GDPR, and HIPAA-ready controls for regulated workloads. ' + nextBestQuestion();
+      }
+      if (intent === 'timeline') {
+        return opener + 'Typical deployment is around 30 days with fixed milestones. ' + nextBestQuestion();
+      }
+      if (intent === 'capabilities') {
+        return opener + 'Aira can predict outcomes, automate workflows, generate leads, and drive measurable ROI. ' + nextBestQuestion();
+      }
+      if (intent === 'greeting') {
+        return opener + 'Welcome to SGC TECH AI. I can help with pricing, integrations, compliance, booking, or human escalation. ' + nextBestQuestion();
+      }
+
+      return opener + 'I understand. I can support deployment planning, integrations, pricing, or escalation to a human specialist. ' + nextBestQuestion();
+    }
+
+    function renderHistory() {
+      chatLog.innerHTML = '';
+      history.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'aira-msg ' + item.role;
+        row.textContent = item.text;
+        chatLog.appendChild(row);
+      });
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function appendMessage(role, text) {
+      history.push({
+        role: role,
+        text: text,
+        at: new Date().toISOString(),
+      });
+      if (history.length > 120) history.splice(0, history.length - 120);
+      saveStorage(storageKey, history);
+      renderHistory();
+      queueCentralSync();
+    }
+
+    function assistantReply(userText) {
+      const intent = detectIntent(userText);
+
+      brainState.turns += 1;
+      brainState.lastIntent = intent;
+      brainState.intentCounts[intent] = (brainState.intentCounts[intent] || 0) + 1;
+
+      extractProfile(userText);
+      updateLeadScore(intent);
+      saveBrain();
+
+      appendEvent('brain_state', {
+        intent: intent,
+        leadScore: brainState.leadScore,
+        profile: brainState.profile,
+      });
+
+      return buildResponse(intent);
+    }
+
+    const modeMessages = {
+      chat: 'Chat mode is active. Ask pricing, integrations, or use the quick actions below.',
+      voice: 'Voice mode is active. Speak your use case and Aira will guide next steps and booking.',
+    };
+
+    const setOpen = (open) => {
+      if (open) {
+        panel.hidden = false;
+        requestAnimationFrame(() => panel.classList.add('is-open'));
+      } else {
+        panel.classList.remove('is-open');
+        setTimeout(() => {
+          if (!panel.classList.contains('is-open')) panel.hidden = true;
+        }, 240);
+      }
+      launcher.setAttribute('aria-expanded', String(open));
+      appendEvent(open ? 'open_panel' : 'close_panel', root.getAttribute('data-active-mode') || 'chat');
+    };
+
+    const setMode = (mode) => {
+      root.setAttribute('data-active-mode', mode);
+      modeBtns.forEach((btn) => {
+        const active = btn.getAttribute('data-mode') === mode;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', String(active));
+      });
+      modeCopy.textContent = modeMessages[mode] || modeMessages.chat;
+    };
+
+    const buildAlertMessage = () => {
+      const activeMode = root.getAttribute('data-active-mode') || 'chat';
+      return [
+        'Talk-to-human request from Aira chatbox.',
+        'Session: ' + sessionId,
+        'Mode: ' + activeMode,
+        'Page: ' + window.location.href,
+        'Please follow up with this lead immediately.',
+      ].join(' ');
+    };
+
+    launcher.addEventListener('click', () => setOpen(panel.hidden));
+    closeBtn.addEventListener('click', () => setOpen(false));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) setOpen(false);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (panel.hidden) return;
+      if (!root.contains(e.target)) setOpen(false);
+    });
+
+    modeBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const mode = btn.getAttribute('data-mode') || 'chat';
+        setMode(mode);
+        appendEvent('switch_mode', mode);
+      });
+    });
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      appendMessage('user', message);
+      appendEvent('user_message', message);
+      chatInput.value = '';
+
+      setTimeout(() => {
+        const reply = assistantReply(message);
+        appendMessage('assistant', reply);
+        appendEvent('assistant_message', reply);
+      }, 220);
+    });
+
+    talkBtn.addEventListener('click', () => {
+      const message = buildAlertMessage();
+      const encoded = encodeURIComponent(message);
+      const whatsappUrl = 'https://wa.me/' + alertPhone + '?text=' + encoded;
+      const telegramUrl = 'tg://resolve?phone=' + alertPhone + '&text=' + encoded;
+      const telegramWebFallback = 'https://t.me/share/url?url=' + encodeURIComponent(window.location.href) + '&text=' + encoded;
+
+      alertWhatsapp.setAttribute('href', whatsappUrl);
+      alertTelegram.setAttribute('href', telegramUrl);
+      alertTelegram.setAttribute('data-fallback-href', telegramWebFallback);
+      alertLinksWrap.hidden = false;
+      alertStatus.textContent = 'Choose a channel to alert human support: WhatsApp or Telegram.';
+      appendEvent('talk_to_human', root.getAttribute('data-active-mode') || 'chat');
+    });
+
+    alertWhatsapp.addEventListener('click', () => {
+      alertStatus.textContent = 'Opening WhatsApp with your handoff message.';
+      appendEvent('alert_whatsapp', window.location.href);
+    });
+
+    alertTelegram.addEventListener('click', () => {
+      const fallback = alertTelegram.getAttribute('data-fallback-href');
+      if (fallback) {
+        setTimeout(() => {
+          window.open(fallback, '_blank', 'noopener,noreferrer');
+        }, 500);
+      }
+      alertStatus.textContent = 'Attempting Telegram. If app launch fails, web fallback will open.';
+      appendEvent('alert_telegram', window.location.href);
+    });
+
+    const quickBookBtn = root.querySelector('[data-book-demo]');
+    if (quickBookBtn) {
+      quickBookBtn.setAttribute('href', bookingUrl);
+      quickBookBtn.addEventListener('click', () => {
+        appendEvent('book_demo', bookingUrl);
+      });
+    }
+
+    setMode('chat');
+
+    setSyncStatus('Central memory sync: checking...', 'warn');
+
+    fetchCentralMemory().finally(() => {
+      if (!history.length) {
+        appendMessage('assistant', 'Hello, welcome to SGC TECH AI. I am Aira. How can I support your B2B sales goals today?');
+      } else {
+        renderHistory();
+      }
+      queueCentralSync();
+    });
+  }
+
+  initAiraChatbox();
 })();

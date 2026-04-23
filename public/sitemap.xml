@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Homepage - Main Entry Point -->
+  <url>
+    <loc>https://sgctech.ai</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://www.sgctech.ai</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Homepage Sections -->
+  <url>
+    <loc>https://sgctech.ai/#top</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- Industries Section -->
+  <url>
+    <loc>https://sgctech.ai/#industries</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/healthcare-hospital.jpg</image:loc>
+      <image:title>Healthcare Hospital Operations</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/manufacturing-mrp.jpg</image:loc>
+      <image:title>Manufacturing MRP Shop Floor</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/retail-pos.jpg</image:loc>
+      <image:title>Retail Unified Commerce</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/construction-boq.jpg</image:loc>
+      <image:title>Construction BoQ Progress Billing</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/logistics-warehouse.jpg</image:loc>
+      <image:title>Logistics Warehouse Customs</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/realestate-crm.jpg</image:loc>
+      <image:title>Real Estate Property CRM</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/education-lms.jpg</image:loc>
+      <image:title>Education LMS Live Classrooms</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sgctech.ai/static/stories/hospitality-hotel.jpg</image:loc>
+      <image:title>Hospitality Hotel PMS</image:title>
+    </image:image>
+  </url>
+
+  <!-- Why SGC Tech AI Section -->
+  <url>
+    <loc>https://sgctech.ai/#why</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- Pricing Section -->
+  <url>
+    <loc>https://sgctech.ai/#pricing</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- Testimonials/Customers Section -->
+  <url>
+    <loc>https://sgctech.ai/#testimonials</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- Case Studies/Stories Section -->
+  <url>
+    <loc>https://sgctech.ai/#stories</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- FAQ Section -->
+  <url>
+    <loc>https://sgctech.ai/#faq</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- Footer Navigation Links -->
+  <url>
+    <loc>https://sgctech.ai/#product</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>quarterly</changefreq>
+    <priority>0.60</priority>
+  </url>
+
+  <url>
+    <loc>https://sgctech.ai/#company</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>quarterly</changefreq>
+    <priority>0.60</priority>
+  </url>
+
+  <url>
+    <loc>https://sgctech.ai/#legal</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>quarterly</changefreq>
+    <priority>0.50</priority>
+  </url>
+
+  <!-- Legal Pages (if implemented) -->
+  <url>
+    <loc>https://sgctech.ai/privacy</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.40</priority>
+  </url>
+
+  <url>
+    <loc>https://sgctech.ai/terms</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.40</priority>
+  </url>
+
+  <url>
+    <loc>https://sgctech.ai/security</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.40</priority>
+  </url>
+
+</urlset>

@@ -289,6 +289,317 @@ section {
 }
 .btn:hover .arrow { transform: translateX(4px); }
 
+/* Floating Aira voice agent button */
+.floating-message-btn {
+  position: fixed;
+  right: clamp(0.9rem, 2vw, 1.4rem);
+  bottom: clamp(0.9rem, 2vw, 1.4rem);
+  z-index: 120;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  color: var(--navy-900);
+  background: linear-gradient(135deg, var(--cyan) 0%, #7eeaff 100%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 16px 30px -14px rgba(0, 217, 255, 0.75);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
+  transition: transform 0.35s var(--ease-out-expo), box-shadow 0.35s var(--ease-out-expo);
+  animation: airaLauncherFloat 3.2s ease-in-out infinite;
+}
+
+.floating-message-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 35px -14px rgba(0, 217, 255, 0.9);
+}
+
+.floating-message-btn::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 1px solid rgba(0, 217, 255, 0.45);
+  opacity: 0;
+  animation: airaLauncherPulse 2.6s ease-out infinite;
+}
+
+.floating-message-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.aira-chatbox {
+  position: fixed;
+  right: clamp(0.9rem, 2vw, 1.4rem);
+  bottom: clamp(0.9rem, 2vw, 1.4rem);
+  z-index: 120;
+}
+
+.aira-chat-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.8rem);
+  width: min(380px, calc(100vw - 1.8rem));
+  border-radius: 18px;
+  background: rgba(9, 17, 42, 0.94);
+  border: 1px solid rgba(0, 217, 255, 0.28);
+  box-shadow: 0 26px 48px -22px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(0, 217, 255, 0.09) inset;
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  overflow: hidden;
+  transform: translateY(14px) scale(0.98);
+  opacity: 0;
+  transition: transform 0.32s var(--ease-out-expo), opacity 0.28s ease;
+}
+
+.aira-chat-panel.is-open {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.aira-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(0, 217, 255, 0.18);
+}
+
+.aira-chat-eyebrow {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--cyan);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.aira-chat-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--gray-100);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.aira-chat-close:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.aira-chat-body {
+  padding: 1rem;
+  display: grid;
+  gap: 0.82rem;
+}
+
+.aira-chat-log {
+  max-height: 180px;
+  overflow: auto;
+  display: grid;
+  gap: 0.45rem;
+  padding-right: 0.2rem;
+}
+
+.aira-msg {
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  animation: airaMsgIn 0.26s var(--ease-out-expo);
+}
+
+.aira-msg.user {
+  background: rgba(0, 217, 255, 0.14);
+  border: 1px solid rgba(0, 217, 255, 0.35);
+  color: var(--gray-100);
+}
+
+.aira-msg.assistant {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--gray-100);
+}
+
+.aira-chat-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+
+.aira-chat-input {
+  min-width: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--gray-100);
+  padding: 0.6rem 0.7rem;
+  font-size: 0.84rem;
+}
+
+.aira-chat-input:focus {
+  outline: none;
+  border-color: rgba(0, 217, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.14);
+}
+
+.aira-chat-send {
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--cyan) 0%, #7eeaff 100%);
+  color: var(--navy-900);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.6rem 0.82rem;
+}
+
+.aira-recording-note {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--gray-400);
+}
+
+.aira-sync-note {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--gray-500);
+}
+
+.aira-sync-note.ok { color: #83f8cf; }
+.aira-sync-note.warn { color: #ffd089; }
+.aira-sync-note.err { color: #ff9da2; }
+
+.aira-chat-welcome,
+.aira-mode-copy,
+.aira-alert-status {
+  margin: 0;
+  color: var(--gray-300);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.aira-alert-status {
+  min-height: 1.2rem;
+  color: #9be4ff;
+}
+
+@keyframes airaLauncherPulse {
+  0% { transform: scale(0.96); opacity: 0.6; }
+  70% { transform: scale(1.1); opacity: 0; }
+  100% { transform: scale(1.1); opacity: 0; }
+}
+
+@keyframes airaLauncherFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes airaMsgIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.aira-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.aira-mode-btn {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--gray-100);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.aira-mode-btn.active {
+  border-color: rgba(0, 217, 255, 0.42);
+  color: var(--navy-900);
+  background: linear-gradient(135deg, var(--cyan) 0%, #7eeaff 100%);
+}
+
+.aira-quick-actions,
+.aira-alert-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.aira-quick-btn,
+.aira-alert-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  padding: 0.62rem 0.72rem;
+  text-align: center;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.aira-quick-btn {
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.28);
+  color: var(--gray-100);
+}
+
+.aira-quick-btn:hover {
+  border-color: rgba(0, 217, 255, 0.6);
+  color: var(--cyan);
+}
+
+.aira-quick-human {
+  background: rgba(0, 71, 255, 0.13);
+  border-color: rgba(0, 71, 255, 0.38);
+}
+
+.aira-alert-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--gray-100);
+}
+
+.aira-alert-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+@media (max-width: 700px) {
+  .aira-chatbox {
+    right: 0.8rem;
+    bottom: 0.8rem;
+  }
+
+  .aira-chat-panel {
+    width: min(360px, calc(100vw - 1rem));
+    right: 0;
+  }
+
+  .floating-message-btn {
+    padding: 0.72rem 0.88rem;
+    font-size: 0.82rem;
+    gap: 0.45rem;
+  }
+
+  .aira-quick-actions,
+  .aira-alert-links {
+    grid-template-columns: 1fr;
+  }
+
+  .aira-chat-form {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ----- NAV ----- */
 .nav {
   position: fixed;
@@ -1956,4 +2267,6 @@ footer {
     scroll-behavior: auto !important;
   }
   .typed-cursor { display: none; }
+  .floating-message-btn { animation: none; }
+  .floating-message-btn::before { animation: none; }
 }
