@@ -1,34 +1,41 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "webapp",
-  "compatibility_date": "2026-04-13",
-  "pages_build_output_dir": "./dist",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
-  // "vars": {
-  //   "ADMIN_TOKEN": "set-a-strong-admin-token"
-  // },
-  // "kv_namespaces": [
-  //   {
-  //     "binding": "AIRA_BRAIN_KV",
-  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  //   }
-  // ],
-  // "r2_buckets": [
-  //   {
-  //     "binding": "MY_BUCKET",
-  //     "bucket_name": "my-bucket"
-  //   }
-  // ],
-  // "d1_databases": [
-  //   {
-  //     "binding": "MY_DB",
-  //     "database_name": "my-database",
-  //     "database_id": ""
-  //   }
-  // ],
-  // "ai": {
-  //   "binding": "AI"
-  // }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "webapp",
+	"compatibility_date": "2026-04-13",
+	"pages_build_output_dir": "./dist",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"kv_namespaces": [
+		{
+			"binding": "AIRA_BRAIN_KV",
+			"id": "d5ab928d6e8142fc8f2fb84d1a59dfb4",
+			"remote": true
+		}
+	]
+	// "vars": {
+	//   "ADMIN_TOKEN": "set-a-strong-admin-token"
+	// },
+	// "kv_namespaces": [
+	//   {
+	//     "binding": "AIRA_BRAIN_KV",
+	//     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	//   }
+	// ],
+	// "r2_buckets": [
+	//   {
+	//     "binding": "MY_BUCKET",
+	//     "bucket_name": "my-bucket"
+	//   }
+	// ],
+	// "d1_databases": [
+	//   {
+	//     "binding": "MY_DB",
+	//     "database_name": "my-database",
+	//     "database_id": ""
+	//   }
+	// ],
+	// "ai": {
+	//   "binding": "AI"
+	// }
 }
