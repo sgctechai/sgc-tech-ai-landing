@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { renderer } from './renderer'
 import quoteBuilderApp from './routes/quote-builder'
+import apiApp from './routes/api'
 import {
   IconArrow, IconCheck, IconX, IconPlus, IconStar, IconMenu,
   IconHealthcare, IconFinance, IconRetail, IconManufacturing,
@@ -16,6 +17,7 @@ const app = new Hono()
 app.use(renderer)
 
 app.route('/quote-builder', quoteBuilderApp)
+app.route('/api', apiApp)
 
 const BOOK_DEMO_URL = 'https://app.cal.com/sgctech'
 

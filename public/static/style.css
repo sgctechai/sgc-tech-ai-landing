@@ -2955,3 +2955,77 @@ footer {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30% { transform: translateY(-5px); opacity: 1; }
 }
+
+/* ── Quote Builder Lead Form Additions ──────────────────────────── */
+
+/* Email status indicator */
+.qb-email-wrap {
+  position: relative;
+}
+.qb-email-wrap input {
+  padding-right: 100px;
+}
+.qb-email-status {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  white-space: nowrap;
+  color: #b4bed2;
+  pointer-events: none;
+}
+.qb-email-status--checking { color: #b4bed2; }
+.qb-email-status--valid    { color: #00d9ff; }
+.qb-email-status--error    { color: #ff4d6d; }
+
+/* Dual-button action row */
+.qb-modal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.qb-modal-actions .btn {
+  flex-shrink: 0;
+}
+@media (max-width: 480px) {
+  .qb-modal-actions {
+    flex-direction: column-reverse;
+  }
+  .qb-modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* btn-secondary style (for Download PDF) */
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(0, 217, 255, 0.4);
+  color: #00d9ff;
+}
+.btn-secondary:hover {
+  background: rgba(0, 217, 255, 0.08);
+  border-color: #00d9ff;
+}
+
+/* Success message */
+.qb-email-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(0, 217, 255, 0.08);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: 8px;
+  color: #00d9ff;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+/* Mobile tel input */
+#qb-mobile {
+  width: 100%;
+}

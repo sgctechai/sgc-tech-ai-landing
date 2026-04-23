@@ -12,7 +12,20 @@
 			"id": "d5ab928d6e8142fc8f2fb84d1a59dfb4",
 			"remote": true
 		}
-	]
+	],
+	"vars": {
+		// Non-secret configuration
+		"SMTP_HOST": "smtppro.zoho.com",
+		"SMTP_PORT": "465",
+		"SMTP_FROM": "hello@scholarixglobal.com",
+		"NOTIFICATION_EMAIL": "info@sgctech.ai",
+		"ODOO_URL": "https://scholarixglobal.com",
+		"ODOO_DB": "scholarixglobal",
+		"ODOO_USER": "info@scholarixglobal.com"
+		// Secrets (set with `wrangler secret put`):
+		// SMTP_PASS      — Zoho app password for hello@scholarixglobal.com
+		// ODOO_API_KEY   — Odoo API key from Settings > Technical > API Keys
+	}
 	// "vars": {
 	//   "ADMIN_TOKEN": "set-a-strong-admin-token"
 	// },

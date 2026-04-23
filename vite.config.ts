@@ -11,6 +11,11 @@ export default defineConfig({
       entry: 'src/index.tsx'
     })
   ],
+  build: {
+    rollupOptions: {
+      external: ['cloudflare:sockets'],
+    },
+  },
   test: {
     environment: 'node',
     include: ['tests/unit/**/*.test.ts'],

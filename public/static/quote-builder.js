@@ -10,6 +10,9 @@
     includeRetainer: false,
   }
 
+  let emailToken = null  // token issued by /api/validate-email
+  let emailValidating = false
+
   /* ─── Data (injected by server via data-json attribute) ──────── */
   let DATA = { industries: [], aiFeatures: [], odooModules: [] }
   try {
@@ -137,8 +140,18 @@
     const modal = $('qb-modal')
     if (modal) {
       modal.hidden = false
-      const nameField = $('qb-name')
-      if (nameField) nameField.focus()
+      const companyField = $('qb-company')
+      if (companyField) companyField.focus()
+      // Reset success/error states
+      const success = $('qb-email-success')
+      const err = $('qb-modal-error')
+      if (success) success.hidden = true
+      if (err) { err.hidden = true; err.textContent = '' }
+      // Restore actions if previously hidden
+      const actions = document.querySelector('.qb-modal-actions')
+      if (actions) actions.style.display = ''
+      setEmailStatus('', '')
+      emailToken = null
     }
   }
 
@@ -149,8 +162,112 @@
     if (err) { err.hidden = true; err.textContent = '' }
   }
 
+  function setEmailStatus(type, msg) {
+    const el = $('qb-email-status')
+    if (!el) return
+    el.className = 'qb-email-status' + (type ? ' qb-email-status--' + type : '')
+    el.textContent = msg
+  }
+
+  function showModalError(msg) {
+    const err = $('qb-modal-error')
+    if (err) { err.textContent = msg; err.hidden = false }
+  }
+
+  function clearModalError() {
+    const err = $('qb-modal-error')
+    if (err) { err.hidden = true; err.textContent = '' }
+  }
+
+  async function validateEmailField() {
+    const email = $('qb-email')?.value.trim()
+    if (!email) { setEmailStatus('', ''); emailToken = null; return false }
+
+    setEmailStatus('checking', 'Checking…')
+    emailValidating = true
+    try {
+      const res = await fetch('/api/validate-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (data.valid) {
+        emailToken = data.token
+        setEmailStatus('valid', '✓ Valid')
+        return true
+      } else {
+        emailToken = null
+        setEmailStatus('error', data.message || 'Invalid email')
+        return false
+      }
+    } catch {
+      setEmailStatus('error', 'Could not verify email')
+      return false
+    } finally {
+      emailValidating = false
+    }
+  }
+
+  async function sendQuoteEmail() {
+    const company = $('qb-company')?.value.trim()
+    const email = $('qb-email')?.value.trim()
+    const mobile = $('qb-mobile')?.value.trim()
+    const hp = $('qb-hp')?.value || ''
+
+    if (!company || !email || !mobile) {
+      showModalError('Please fill in all required fields.')
+      return
+    }
+
+    const emailBtn = $('qb-modal-email')
+    if (emailBtn) {
+      emailBtn.disabled = true
+      emailBtn.textContent = 'Sending…'
+    }
+    clearModalError()
+
+    // Ensure email is validated
+    if (!emailToken) {
+      const ok = await validateEmailField()
+      if (!ok) {
+        if (emailBtn) { emailBtn.disabled = false; emailBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Email Me This Quote' }
+        return
+      }
+    }
+
+    try {
+      const res = await fetch('/api/send-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company, email, mobile, _hp: hp,
+          industryId: state.industryId,
+          aiFeatureIds: [...state.aiFeatures],
+          moduleIds: [...state.modules],
+          includeRetainer: state.includeRetainer,
+          token: emailToken,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        emailToken = null
+        const success = $('qb-email-success')
+        if (success) success.hidden = false
+        const actions = document.querySelector('.qb-modal-actions')
+        if (actions) actions.style.display = 'none'
+      } else {
+        showModalError(data.message || 'Failed to send quote. Please try again.')
+        if (emailBtn) { emailBtn.disabled = false; emailBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Email Me This Quote' }
+      }
+    } catch {
+      showModalError('Network error. Please try again.')
+      if (emailBtn) { emailBtn.disabled = false; emailBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Email Me This Quote' }
+    }
+  }
+
   /* ─── PDF Generation ─────────────────────────────────────────── */
-  function generatePDF(customerName, companyName, customerEmail) {
+  function generatePDF(company, customerEmail) {
     const q = calculateQuote()
     if (!q) return
 
@@ -217,17 +334,11 @@
     doc.setTextColor(...WHITE)
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    doc.text(customerName, 18, 98)
-    if (companyName) {
-      doc.setFontSize(11)
-      doc.setFont('helvetica', 'normal')
-      doc.setTextColor(...CYAN)
-      doc.text(companyName, 18, 105)
-    }
+    doc.text(company, 18, 98)
     if (customerEmail) {
       doc.setFontSize(9)
       doc.setTextColor(...GRAY)
-      doc.text(customerEmail, 18, 112)
+      doc.text(customerEmail, 18, 105)
     }
 
     // Industry highlight
@@ -424,7 +535,7 @@
       doc.text(`Page ${p} of ${totalPages}`, W - 14, H - 8, { align: 'right' })
     }
 
-    const safeName = (customerName || 'Quote').replace(/[^a-zA-Z0-9]/g, '-')
+    const safeName = (company || 'Quote').replace(/[^a-zA-Z0-9]/g, '-')
     doc.save(`SGC-Quote-${quoteNum}-${safeName}.pdf`)
   }
 
@@ -475,22 +586,39 @@
       if (e.key === 'Escape' && !$('qb-modal')?.hidden) closeModal()
     })
 
-    // Generate PDF button
-    $('qb-modal-generate')?.addEventListener('click', () => {
-      const name = $('qb-name')?.value.trim()
+    // Debounced email validation on blur
+    $('qb-email')?.addEventListener('blur', () => {
+      const email = $('qb-email')?.value.trim()
+      if (email && !emailValidating) validateEmailField()
+    })
+    $('qb-email')?.addEventListener('input', () => {
+      // Clear token when user edits the email
+      emailToken = null
+      setEmailStatus('', '')
+    })
+
+    // Download PDF button
+    $('qb-modal-download')?.addEventListener('click', async () => {
       const company = $('qb-company')?.value.trim()
       const email = $('qb-email')?.value.trim()
+      const mobile = $('qb-mobile')?.value.trim()
 
-      if (!name) {
-        const err = $('qb-modal-error')
-        if (err) { err.textContent = 'Please enter your name to continue.'; err.hidden = false }
-        $('qb-name')?.focus()
-        return
+      if (!company) { showModalError('Please enter your company name.'); $('qb-company')?.focus(); return }
+      if (!email) { showModalError('Please enter your work email.'); $('qb-email')?.focus(); return }
+      if (!mobile) { showModalError('Please enter your mobile number.'); $('qb-mobile')?.focus(); return }
+      clearModalError()
+
+      // Validate email before PDF (ensures real lead capture)
+      if (!emailToken) {
+        const ok = await validateEmailField()
+        if (!ok) return
       }
-
       closeModal()
-      generatePDF(name, company, email)
+      generatePDF(company, email)
     })
+
+    // Email quote button
+    $('qb-modal-email')?.addEventListener('click', sendQuoteEmail)
 
     // Signal that JS has fully initialized (used by E2E tests)
     window.QBInitialized = true

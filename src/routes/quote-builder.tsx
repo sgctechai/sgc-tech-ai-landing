@@ -275,40 +275,56 @@ quoteBuilderApp.get('/', async (c) => {
                   <QbIcon name="download" size={16} />
                   Generate PDF Proposal
                 </button>
-                <p class="qb-sidebar-note">Enter your name to personalise the proposal</p>
+                <p class="qb-sidebar-note">Enter your details to personalise the proposal</p>
               </div>
             </aside>
           </div>
         </section>
       </div>{/* /qb-builder */}
 
-      {/* ── Customer Info Modal ── */}
+      {/* ── Lead Capture Modal ── */}
       <div class="qb-modal-overlay" id="qb-modal" aria-modal="true" role="dialog" aria-labelledby="qb-modal-title" hidden>
         <div class="qb-modal-card glass">
           <button class="qb-modal-close" id="qb-modal-close" type="button" aria-label="Close"><QbIcon name="x" size={18} /></button>
-          <h3 class="qb-modal-title" id="qb-modal-title">Generate Your Proposal</h3>
-          <p class="qb-modal-sub">Your name and company will appear on the PDF cover page.</p>
+          <h3 class="qb-modal-title" id="qb-modal-title">Get Your Quote</h3>
+          <p class="qb-modal-sub">Enter your details to download or email your personalised proposal.</p>
+
+          {/* Honeypot — hidden from humans, bots fill it */}
+          <div style="display:none;position:absolute;left:-9999px;" aria-hidden="true">
+            <input type="text" id="qb-hp" name="website" tabindex={-1} autocomplete="off" />
+          </div>
 
           <div class="qb-field">
-            <label for="qb-name">Your Name <span class="qb-required">*</span></label>
-            <input type="text" id="qb-name" placeholder="e.g. Sarah Al Mansouri" autocomplete="name" />
-          </div>
-          <div class="qb-field">
-            <label for="qb-company">Company Name</label>
+            <label for="qb-company">Company Name <span class="qb-required">*</span></label>
             <input type="text" id="qb-company" placeholder="e.g. Meridian Holdings" autocomplete="organization" />
           </div>
           <div class="qb-field">
-            <label for="qb-email">Email <span class="qb-optional-lbl">(optional)</span></label>
-            <input type="email" id="qb-email" placeholder="you@company.com" autocomplete="email" />
+            <label for="qb-email">Work Email <span class="qb-required">*</span></label>
+            <div class="qb-email-wrap">
+              <input type="email" id="qb-email" placeholder="you@company.com" autocomplete="email" />
+              <span id="qb-email-status" class="qb-email-status" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="qb-field">
+            <label for="qb-mobile">Mobile <span class="qb-required">*</span></label>
+            <input type="tel" id="qb-mobile" placeholder="+971 50 123 4567" autocomplete="tel" />
           </div>
 
           <div id="qb-modal-error" class="qb-modal-error" hidden></div>
+          <div id="qb-email-success" class="qb-email-success" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Quote sent! Check your inbox (and spam folder just in case).
+          </div>
 
           <div class="qb-modal-actions">
             <button class="btn btn-ghost" id="qb-modal-cancel" type="button">Cancel</button>
-            <button class="btn btn-primary" id="qb-modal-generate" type="button">
+            <button class="btn btn-secondary" id="qb-modal-download" type="button">
               <QbIcon name="download" size={16} />
               Download PDF
+            </button>
+            <button class="btn btn-primary" id="qb-modal-email" type="button">
+              <QbIcon name="mail" size={16} />
+              Email Me This Quote
             </button>
           </div>
         </div>
