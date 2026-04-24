@@ -623,7 +623,7 @@
     const voiceVisualizer = root.querySelector('#aira-voice-visualizer');
     const syncStatus = root.querySelector('[data-sync-status]');
 
-    if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLinksWrap || !alertWhatsapp || !alertTelegram || !chatLog || !chatForm || !chatInput || !voicePanel || !voiceToggleBtn) {
+if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLinksWrap || !alertWhatsapp || !alertTelegram || !chatLog || !chatForm || !chatInput || !voicePanel || !voiceToggleBtn) {
       return;
     }
 
@@ -1142,17 +1142,26 @@
 
       recognition.onerror = () => {
         isVoiceListening = false;
-        voiceToggleBtn.classList.remove('listening');
-        voiceToggleBtn.textContent = 'Start Voice Conversation';
+        if (voiceToggleBtn) {
+          voiceToggleBtn.classList.remove('listening');
+          voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+        }
+        if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
+        if (voiceStatus) voiceStatus.textContent = 'Tap the microphone to start';
       };
 
       recognition.onend = () => {
         isVoiceListening = false;
-        voiceToggleBtn.classList.remove('listening');
-        voiceToggleBtn.textContent = 'Start Voice Conversation';
+        if (voiceToggleBtn) {
+          voiceToggleBtn.classList.remove('listening');
+          voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+        }
+        if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
+        if (voiceStatus) voiceStatus.textContent = 'Tap the microphone to start';
       };
     }
 
+    // Voice toggle - click to start/stop
     voiceToggleBtn.addEventListener('click', () => {
       if (!canUseVoice) return;
       if (isVoiceListening) {
@@ -1162,38 +1171,36 @@
       }
     });
 
-    // Hold to talk - mouse/touch
+    // Hold to talk - press and hold mic button
     if (voiceToggleBtn) {
-      voiceToggleBtn.addEventListener('mousedown', (e) => {
+      voiceToggleBtn.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') return; // Touch handled separately
         e.preventDefault();
         if (canUseVoice && !isVoiceListening) startVoiceListening();
       });
-      voiceToggleBtn.addEventListener('mouseup', (e) => {
+      voiceToggleBtn.addEventListener('pointerup', (e) => {
+        if (e.pointerType === 'touch') return;
         e.preventDefault();
         if (canUseVoice && isVoiceListening) stopVoiceListening();
       });
-      voiceToggleBtn.addEventListener('mouseleave', (e) => {
+      voiceToggleBtn.addEventListener('pointerleave', () => {
         if (canUseVoice && isVoiceListening) stopVoiceListening();
       });
-      // Touch support
+      // Touch: tap to toggle
       voiceToggleBtn.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        if (canUseVoice && !isVoiceListening) startVoiceListening();
-      });
-      voiceToggleBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        if (canUseVoice && isVoiceListening) stopVoiceListening();
-      });
+      }, { passive: false });
     }
 
-    // Keyboard: Space to talk (when voice mode is active)
-    document.addEventListener('keydown', (e) => {
+    // Keyboard: Space to toggle when in voice mode
+    root.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && root.getAttribute('data-active-mode') === 'voice' && !e.repeat) {
+        if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
         e.preventDefault();
         if (canUseVoice && !isVoiceListening) startVoiceListening();
       }
     });
-    document.addEventListener('keyup', (e) => {
+    root.addEventListener('keyup', (e) => {
       if (e.code === 'Space' && root.getAttribute('data-active-mode') === 'voice') {
         e.preventDefault();
         if (canUseVoice && isVoiceListening) stopVoiceListening();
