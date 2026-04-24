@@ -619,6 +619,8 @@
     const chatInput = root.querySelector('[data-chat-input]');
     const voicePanel = root.querySelector('[data-voice-panel]');
     const voiceToggleBtn = root.querySelector('[data-voice-toggle]');
+    const voiceStatus = root.querySelector('#aira-voice-status');
+    const voiceVisualizer = root.querySelector('#aira-voice-visualizer');
     const syncStatus = root.querySelector('[data-sync-status]');
 
     if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLinksWrap || !alertWhatsapp || !alertTelegram || !chatLog || !chatForm || !chatInput || !voicePanel || !voiceToggleBtn) {
@@ -1009,8 +1011,12 @@
     function stopVoiceListening() {
       if (!canUseVoice || !recognition || !isVoiceListening) return;
       isVoiceListening = false;
-      voiceToggleBtn.classList.remove('listening');
-      voiceToggleBtn.textContent = 'Start Voice Conversation';
+      if (voiceToggleBtn) {
+        voiceToggleBtn.classList.remove('listening');
+        voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+      }
+      if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
+      if (voiceStatus) voiceStatus.textContent = 'Tap the microphone to start';
       try {
         recognition.stop();
       } catch (_) {}
@@ -1020,14 +1026,22 @@
     function startVoiceListening() {
       if (!canUseVoice || !recognition || isVoiceListening) return;
       isVoiceListening = true;
-      voiceToggleBtn.classList.add('listening');
-      voiceToggleBtn.textContent = 'Stop Listening';
+      if (voiceToggleBtn) {
+        voiceToggleBtn.classList.add('listening');
+        voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+      }
+      if (voiceVisualizer) voiceVisualizer.classList.add('recording');
+      if (voiceStatus) voiceStatus.textContent = 'Listening... Speak now';
       try {
         recognition.start();
       } catch (_) {
         isVoiceListening = false;
-        voiceToggleBtn.classList.remove('listening');
-        voiceToggleBtn.textContent = 'Start Voice Conversation';
+        if (voiceToggleBtn) {
+          voiceToggleBtn.classList.remove('listening');
+          voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+        }
+        if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
+        if (voiceStatus) voiceStatus.textContent = 'Tap the microphone to start';
       }
       appendEvent('voice_start', 'manual');
     }
@@ -1145,6 +1159,44 @@
         stopVoiceListening();
       } else {
         startVoiceListening();
+      }
+    });
+
+    // Hold to talk - mouse/touch
+    if (voiceToggleBtn) {
+      voiceToggleBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (canUseVoice && !isVoiceListening) startVoiceListening();
+      });
+      voiceToggleBtn.addEventListener('mouseup', (e) => {
+        e.preventDefault();
+        if (canUseVoice && isVoiceListening) stopVoiceListening();
+      });
+      voiceToggleBtn.addEventListener('mouseleave', (e) => {
+        if (canUseVoice && isVoiceListening) stopVoiceListening();
+      });
+      // Touch support
+      voiceToggleBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (canUseVoice && !isVoiceListening) startVoiceListening();
+      });
+      voiceToggleBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (canUseVoice && isVoiceListening) stopVoiceListening();
+      });
+    }
+
+    // Keyboard: Space to talk (when voice mode is active)
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && root.getAttribute('data-active-mode') === 'voice' && !e.repeat) {
+        e.preventDefault();
+        if (canUseVoice && !isVoiceListening) startVoiceListening();
+      }
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space' && root.getAttribute('data-active-mode') === 'voice') {
+        e.preventDefault();
+        if (canUseVoice && isVoiceListening) stopVoiceListening();
       }
     });
 

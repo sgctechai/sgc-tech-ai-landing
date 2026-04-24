@@ -1169,9 +1169,24 @@ app.get('/', (c) => {
             </form>
 
             <div class="aira-voice-panel" data-voice-panel hidden>
-              <button type="button" class="aira-voice-toggle" data-voice-toggle>
-                Start Voice Conversation
-              </button>
+              <div class="aira-voice-recorder">
+                <div class="aira-voice-visualizer" id="aira-voice-visualizer">
+                  <div class="aira-voice-bars">
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span>
+                  </div>
+                </div>
+                <p class="aira-voice-status" id="aira-voice-status">Tap the microphone to start</p>
+                <button type="button" class="aira-voice-mic-btn" data-voice-toggle id="aira-voice-mic-btn">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                  </svg>
+                </button>
+                <p class="aira-voice-hint">Or press and hold Space to talk</p>
+              </div>
             </div>
 
             <div class="aira-quick-actions">

@@ -435,8 +435,108 @@ section {
 }
 
 .aira-voice-panel {
-  display: grid;
-  gap: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1rem;
+}
+
+.aira-voice-recorder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.aira-voice-visualizer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 40px;
+  gap: 3px;
+}
+
+.aira-voice-bars {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 100%;
+  gap: 3px;
+}
+
+.aira-voice-bars span {
+  display: block;
+  width: 4px;
+  height: 8px;
+  background: var(--cyan);
+  border-radius: 2px;
+  transition: height 0.15s ease;
+}
+
+.aira-voice-visualizer.recording .aira-voice-bars span {
+  animation: airaVoiceBar 0.6s ease-in-out infinite;
+}
+
+.aira-voice-visualizer.recording .aira-voice-bars span:nth-child(1) { animation-delay: 0s; }
+.aira-voice-visualizer.recording .aira-voice-bars span:nth-child(2) { animation-delay: 0.1s; }
+.aira-voice-visualizer.recording .aira-voice-bars span:nth-child(3) { animation-delay: 0.2s; }
+.aira-voice-visualizer.recording .aira-voice-bars span:nth-child(4) { animation-delay: 0.3s; }
+.aira-voice-visualizer.recording .aira-voice-bars span:nth-child(5) { animation-delay: 0.4s; }
+.aira-voice-visualizer.recording .aira-voice-bars span:nth-child(6) { animation-delay: 0.5s; }
+.aira-voice-visualizer.recording .aira-voice-bars span:nth-child(7) { animation-delay: 0.6s; }
+
+@keyframes airaVoiceBar {
+  0%, 100% { height: 8px; }
+  50% { height: 36px; }
+}
+
+.aira-voice-status {
+  font-size: 0.82rem;
+  color: var(--gray-400);
+  font-family: var(--font-body);
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.aira-voice-mic-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cyan) 0%, #7eeaff 100%);
+  color: var(--navy-900);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px -8px rgba(0, 217, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.aira-voice-mic-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px -8px rgba(0, 217, 255, 0.9);
+}
+
+.aira-voice-mic-btn:active,
+.aira-voice-mic-btn.listening {
+  background: linear-gradient(135deg, #ffc14d 0%, #ff8f52 100%);
+  transform: scale(0.95);
+  box-shadow: 0 4px 16px -4px rgba(255, 193, 77, 0.7);
+  animation: airaListeningPulse 1s ease-in-out infinite;
+}
+
+@keyframes airaListeningPulse {
+  0%, 100% { box-shadow: 0 4px 16px -4px rgba(255, 193, 77, 0.7); }
+  50% { box-shadow: 0 8px 32px -8px rgba(255, 193, 77, 0.95); }
+}
+
+.aira-voice-hint {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  font-family: var(--font-mono);
 }
 
 .aira-voice-toggle {
