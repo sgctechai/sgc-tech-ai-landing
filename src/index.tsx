@@ -360,6 +360,59 @@ app.post('/api/aira/memory', async (c) => {
   return c.json({ ok: true, saved: true, updatedAt: now })
 })
 
+/* ---------- Aira Voice Proxy ---------- */
+
+app.post('/api/aira/voice', async (c) => {
+  let formData: FormData
+  try {
+    formData = await c.req.formData()
+  } catch {
+    return c.json({ ok: false, error: 'Invalid form data' }, 400)
+  }
+
+  const audio = formData.get('audio')
+  if (!audio) return c.json({ ok: false, error: 'audio field required' }, 400)
+
+  const rawSession = formData.get('session_id')
+  const resolvedSessionId = (typeof rawSession === 'string' && rawSession.trim())
+    ? rawSession.trim()
+    : crypto.randomUUID()
+
+  const outForm = new FormData()
+  outForm.append('audio', audio as Blob, 'voice.webm')
+  outForm.append('session_id', resolvedSessionId)
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
+
+  let resp: Response
+  try {
+    resp = await fetch('https://aira.tachimao.com/web/voice', {
+      method: 'POST',
+      body: outForm,
+      signal: controller.signal,
+    })
+  } catch {
+    clearTimeout(timeoutId)
+    return c.json({ ok: false, error: 'Voice service unavailable' }, 502)
+  }
+  clearTimeout(timeoutId)
+
+  if (!resp.ok) return c.json({ ok: false, error: `Voice service error ${resp.status}` }, 502)
+
+  const audioBuf = await resp.arrayBuffer()
+
+  return new Response(audioBuf, {
+    status: 200,
+    headers: {
+      'Content-Type': resp.headers.get('Content-Type') || 'audio/mpeg',
+      'X-Session-Id': resp.headers.get('X-Session-Id') || resolvedSessionId,
+      'X-Transcript': resp.headers.get('X-Transcript') || '',
+      'X-Response': resp.headers.get('X-Response') || '',
+    },
+  })
+})
+
 /* ---------- Aira Chat Proxy ---------- */
 
 interface AiraChatRequest {
@@ -1168,10 +1221,16 @@ app.get('/', (c) => {
 
           <div class="aira-chat-body">
 
+            {/* Mode tabs */}
+            <div class="aira-mode-switch" role="tablist" aria-label="Assistant mode">
+              <button type="button" class="aira-mode-btn active" data-mode="chat" role="tab" aria-selected="true">Chat</button>
+              <button type="button" class="aira-mode-btn" data-mode="voice" role="tab" aria-selected="false">Voice</button>
+            </div>
+
             {/* Message log */}
             <div class="aira-chat-log" data-chat-log aria-live="polite" aria-label="Aira conversation history"></div>
 
-            {/* Chat form - unified with voice capability */}
+            {/* Chat form (visible in chat mode) */}
             <form class="aira-chat-form" data-chat-form>
               <textarea
                 id="aira-chat-input"
@@ -1179,15 +1238,13 @@ app.get('/', (c) => {
                 class="aira-chat-input"
                 data-chat-input
                 rows={3}
-                placeholder="Ask Aira anything… or hold the mic to speak"
+                placeholder="Ask Aira anything about SGC TECH AI…"
                 autocomplete="off"
               ></textarea>
 
-              {/* Controls row */}
               <div class="aira-form-controls">
                 <div class="aira-form-left">
                   <div class="aira-attach-group">
-                    {/* Attachment icons (decorative for now) */}
                     <button type="button" class="aira-icon-btn" title="Attach file" tabindex={-1}>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
@@ -1206,8 +1263,8 @@ app.get('/', (c) => {
                       </svg>
                     </button>
                   </div>
-                  {/* Mic button - now integrated with chat */}
-                  <button type="button" class="aira-mic-btn" title="Hold to speak" data-voice-toggle id="aira-mic-btn">
+                  {/* Mic shortcut — switches to Voice tab */}
+                  <button type="button" class="aira-mic-btn" title="Switch to voice" data-mode-trigger="voice">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                       <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -1216,7 +1273,6 @@ app.get('/', (c) => {
                     </svg>
                   </button>
                 </div>
-
                 <div class="aira-form-right">
                   <span class="aira-char-counter" data-char-counter>0/2000</span>
                   <button type="submit" class="aira-send-btn" aria-label="Send message">
@@ -1228,28 +1284,36 @@ app.get('/', (c) => {
                 </div>
               </div>
 
-              {/* Voice indicator (shows when recording) */}
-              <div class="aira-voice-indicator" id="aira-voice-indicator" hidden>
-                <div class="aira-voice-visualizer" id="aira-voice-visualizer">
-                  <div class="aira-voice-bars">
-                    <span></span><span></span><span></span><span></span><span></span>
-                    <span></span><span></span>
-                  </div>
-                </div>
-                <span class="aira-voice-status" id="aira-voice-status">Listening…</span>
-              </div>
-
-              {/* Footer row */}
               <div class="aira-form-footer">
-                <span>
-                  Press <kbd>Shift+Enter</kbd> for new line
-                </span>
+                <span>Press <kbd>Shift+Enter</kbd> for new line</span>
                 <div class="aira-sys-status">
                   <div class="aira-sys-status-dot"></div>
                   <span data-sync-status>All systems operational</span>
                 </div>
               </div>
             </form>
+
+            {/* Voice panel (visible in voice mode) */}
+            <div class="aira-voice-panel" data-voice-panel hidden>
+              <div class="aira-voice-recorder">
+                <div class="aira-voice-visualizer" id="aira-voice-visualizer">
+                  <div class="aira-voice-bars">
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span>
+                  </div>
+                </div>
+                <p class="aira-voice-status" id="aira-voice-status">Tap the microphone to start</p>
+                <button type="button" class="aira-voice-mic-btn" data-voice-toggle id="aira-voice-mic-btn" aria-label="Start recording">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                  </svg>
+                </button>
+                <p class="aira-voice-hint">Hold button or press Space to talk</p>
+              </div>
+            </div>
 
             {/* Quick action buttons */}
             <div class="aira-quick-actions">

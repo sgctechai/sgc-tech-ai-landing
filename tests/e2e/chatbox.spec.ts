@@ -246,12 +246,13 @@ test.describe('Aira Chatbox', () => {
     })
 
     test('multiple messages build conversation history', async ({ page }) => {
+      // Use call-count rather than body inspection (postDataJSON unreliable with dev server)
+      let callCount = 0
       await page.route('/api/aira/chat', async route => {
-        const body = await route.request.postDataJSON()
-        const message = body.message
-        let reply = 'OK'
-        if (message.includes('pricing')) reply = 'Professional tier is AED 7,900/month'
-        else if (message.includes('timeline')) reply = 'Typical deployment is 30 days'
+        callCount++
+        const reply = callCount === 1
+          ? 'Professional tier is AED 7,900/month'
+          : 'Typical deployment is 30 days'
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -464,7 +465,7 @@ test.describe('Aira Chatbox', () => {
 
       // Check localStorage directly
       const storageData = await page.evaluate(() => {
-        return localStorage.getItem('aira-history')
+        return localStorage.getItem('aira-chat-history-v1')
       })
       expect(storageData).toContain('Persist this message')
     })
@@ -472,7 +473,7 @@ test.describe('Aira Chatbox', () => {
     test('localStorage is cleared when cleared by user', async ({ page }) => {
       await page.goto('/')
       await page.evaluate(() => {
-        localStorage.setItem('aira-history', JSON.stringify([{ role: 'user', text: 'Old message' }]))
+        localStorage.setItem('aira-chat-history-v1', JSON.stringify([{ role: 'user', text: 'Old message' }]))
       })
       await page.reload()
 

@@ -617,7 +617,8 @@
     const chatForm = root.querySelector('[data-chat-form]');
     const chatInput = root.querySelector('[data-chat-input]');
     const voiceToggleBtn = root.querySelector('[data-voice-toggle]');
-    const voiceIndicator = root.querySelector('#aira-voice-indicator');
+    const voiceStatus = root.querySelector('#aira-voice-status');
+    const voiceVisualizer = root.querySelector('#aira-voice-visualizer');
     const syncStatus = root.querySelector('[data-sync-status]');
 
 if (!launcher || !panel || !closeBtn || !talkBtn || !alertLinksWrap || !alertWhatsapp || !alertTelegram || !chatLog || !chatForm || !chatInput || !voiceToggleBtn) {
@@ -640,17 +641,15 @@ if (!launcher || !panel || !closeBtn || !talkBtn || !alertLinksWrap || !alertWha
     let syncTimer = null;
     let syncInFlight = false;
     let syncQueued = false;
-    let isVoiceListening = false;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const canUseVoice = typeof SpeechRecognition === 'function' && 'speechSynthesis' in window;
-    let recognition = null;
 
-    if (canUseVoice) {
-      recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-    }
+    // Voice recording state (MediaRecorder → real Aira audio)
+    let vrRecording = false;
+    let vrProcessing = false;
+    let vrPlaying = false;
+    let vrMediaRecorder = null;
+    let vrMicStream = null;
+    let vrAudioCtx = null;
+    let vrPlaySource = null;
 
     function loadStorage(key) {
       try {
@@ -922,34 +921,96 @@ if (!launcher || !panel || !closeBtn || !talkBtn || !alertLinksWrap || !alertWha
       queueCentralSync();
     }
 
-    function speakAssistant(text) {
-      if (!('speechSynthesis' in window) || !text) return;
-      try {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 1;
-        utterance.pitch = 1;
-        window.speechSynthesis.speak(utterance);
-      } catch (_) {}
+    function setVoiceState(state) {
+      const labels = { idle: 'Tap to speak with Aira', recording: 'Listening… tap to send', processing: 'Aira is thinking…', speaking: 'Aira is speaking…' };
+      if (voiceStatus) voiceStatus.textContent = labels[state] || labels.idle;
+      if (voiceVisualizer) voiceVisualizer.classList.toggle('recording', state === 'recording' || state === 'speaking');
+      if (voiceToggleBtn) voiceToggleBtn.classList.toggle('listening', state === 'recording');
     }
 
-    async function handleVoiceUserInput(transcript) {
-      if (!transcript) return;
-      appendMessage('user', transcript);
-      appendEvent('voice_user_message', transcript);
-      trackBrainState(transcript);
-      const typingEl = showTyping();
+    async function startVoiceRecording() {
+      if (vrRecording || vrProcessing) return;
+      if (vrPlaying && vrPlaySource) { try { vrPlaySource.stop(); } catch (_) {} vrPlaying = false; }
+
+      let stream;
       try {
-        const reply = await callAira(transcript, 'voice');
-        hideTyping(typingEl);
-        appendMessage('assistant', reply);
-        appendEvent('voice_assistant_message', reply);
-        speakAssistant(reply);
+        stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 } });
       } catch (_) {
-        hideTyping(typingEl);
-        appendMessage('assistant', 'Connection error. Please try again.');
+        setVoiceState('idle');
+        if (voiceStatus) voiceStatus.textContent = 'Microphone access denied';
+        return;
       }
+
+      vrMicStream = stream;
+      const chunks = [];
+      const mimeType = (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))
+        ? 'audio/webm;codecs=opus' : 'audio/webm';
+      vrMediaRecorder = new MediaRecorder(stream, { mimeType });
+      vrMediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      vrMediaRecorder.onstop = () => processVoiceAudio(chunks, mimeType);
+      vrMediaRecorder.start(100);
+      vrRecording = true;
+      setVoiceState('recording');
+      appendEvent('voice_start', 'tap');
+      setTimeout(() => { if (vrRecording) stopVoiceRecording(); }, 30000);
+    }
+
+    function stopVoiceRecording() {
+      if (!vrRecording) return;
+      vrRecording = false;
+      if (vrMediaRecorder && vrMediaRecorder.state !== 'inactive') vrMediaRecorder.stop();
+      if (vrMicStream) { vrMicStream.getTracks().forEach(t => t.stop()); vrMicStream = null; }
+    }
+
+    async function processVoiceAudio(chunks, mimeType) {
+      if (!chunks.length) { setVoiceState('idle'); return; }
+      vrProcessing = true;
+      if (voiceToggleBtn) voiceToggleBtn.disabled = true;
+      setVoiceState('processing');
+
+      const blob = new Blob(chunks, { type: mimeType });
+      const form = new FormData();
+      form.append('audio', blob, 'voice.webm');
+      form.append('session_id', sessionId);
+
+      try {
+        const resp = await fetch('/api/aira/voice', { method: 'POST', body: form });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+        const rawT = resp.headers.get('X-Transcript');
+        const rawR = resp.headers.get('X-Response');
+        if (rawT) {
+          try { const t = atob(rawT); appendMessage('user', t); appendEvent('voice_user_message', t); trackBrainState(t); } catch (_) {}
+        }
+        if (rawR) {
+          try { const r = atob(rawR); appendMessage('assistant', r); appendEvent('voice_assistant_message', r); } catch (_) {}
+        }
+
+        const audioBuf = await resp.arrayBuffer();
+        if (audioBuf.byteLength > 0) await playVoiceAudio(audioBuf);
+      } catch (_) {
+        appendMessage('assistant', 'Voice service unavailable. Please try chat mode.');
+      } finally {
+        vrProcessing = false;
+        if (voiceToggleBtn) voiceToggleBtn.disabled = false;
+        setVoiceState('idle');
+      }
+    }
+
+    async function playVoiceAudio(arrayBuf) {
+      vrPlaying = true;
+      setVoiceState('speaking');
+      try {
+        if (!vrAudioCtx || vrAudioCtx.state === 'closed') vrAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (vrAudioCtx.state === 'suspended') await vrAudioCtx.resume();
+        const decoded = await vrAudioCtx.decodeAudioData(arrayBuf);
+        vrPlaySource = vrAudioCtx.createBufferSource();
+        vrPlaySource.buffer = decoded;
+        vrPlaySource.connect(vrAudioCtx.destination);
+        await new Promise(resolve => { vrPlaySource.onended = resolve; vrPlaySource.start(); });
+      } catch (_) {}
+      vrPlaying = false;
+      setVoiceState('idle');
     }
 
     function trackBrainState(userText) {
@@ -1005,70 +1066,28 @@ if (!launcher || !panel || !closeBtn || !talkBtn || !alertLinksWrap || !alertWha
       }
     }
 
-    function stopVoiceListening() {
-      if (!canUseVoice || !recognition || !isVoiceListening) return;
-      isVoiceListening = false;
-      if (voiceToggleBtn) {
-        voiceToggleBtn.classList.remove('listening');
-      }
-      if (voiceIndicator) voiceIndicator.classList.remove('active');
-      try {
-        recognition.stop();
-      } catch (_) {}
-      appendEvent('voice_stop', 'manual');
-    }
+    const voicePanel = root.querySelector('[data-voice-panel]');
+    const modeBtns = Array.from(root.querySelectorAll('[data-mode]'));
 
-    let pendingVoiceAutoSendTimeout = null;
+    const setMode = (mode) => {
+      root.setAttribute('data-active-mode', mode);
+      modeBtns.forEach((btn) => {
+        const active = btn.getAttribute('data-mode') === mode;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', String(active));
+      });
+      const isVoice = mode === 'voice';
+      if (chatForm) chatForm.hidden = isVoice;
+      if (voicePanel) voicePanel.hidden = !isVoice;
+      if (!isVoice && vrRecording) stopVoiceRecording();
+    };
 
-    function handleVoiceTranscript(transcript) {
-      if (!transcript) return;
-      
-      // Clear any pending auto-send
-      if (pendingVoiceAutoSendTimeout) {
-        clearTimeout(pendingVoiceAutoSendTimeout);
-        pendingVoiceAutoSendTimeout = null;
-      }
-      
-      // Show transcript as pending message in chat
-      appendMessage('user', transcript);
-      appendEvent('voice_user_message', transcript);
-      trackBrainState(transcript);
-      
-      // Auto-send after 1.5 seconds (modern voice pattern)
-      pendingVoiceAutoSendTimeout = setTimeout(async () => {
-        const typingEl = showTyping();
-        try {
-          const reply = await callAira(transcript, 'voice');
-          hideTyping(typingEl);
-          appendMessage('assistant', reply);
-          appendEvent('voice_assistant_message', reply);
-          speakAssistant(reply);
-        } catch (_) {
-          hideTyping(typingEl);
-          appendMessage('assistant', 'Connection error. Please try again.');
-        }
-        stopVoiceListening();
-      }, 1500);
-    }
-
-    function startVoiceListening() {
-      if (!canUseVoice || !recognition || isVoiceListening) return;
-      isVoiceListening = true;
-      if (voiceToggleBtn) {
-        voiceToggleBtn.classList.add('listening');
-      }
-      if (voiceIndicator) voiceIndicator.classList.add('active');
-      try {
-        recognition.start();
-      } catch (_) {
-        isVoiceListening = false;
-        if (voiceToggleBtn) {
-          voiceToggleBtn.classList.remove('listening');
-        }
-        if (voiceIndicator) voiceIndicator.classList.remove('active');
-      }
-      appendEvent('voice_start', 'manual');
-    }
+    modeBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setMode(btn.getAttribute('data-mode') || 'chat');
+        appendEvent('switch_mode', btn.getAttribute('data-mode') || 'chat');
+      });
+    });
 
     const setOpen = (open) => {
       if (open) {
@@ -1157,51 +1176,20 @@ if (!launcher || !panel || !closeBtn || !talkBtn || !alertLinksWrap || !alertWha
       }
     });
 
-    if (recognition) {
-      recognition.onresult = (event) => {
-        const transcript = event.results?.[0]?.[0]?.transcript?.trim() || '';
-        if (!transcript) {
-          return;
-        }
-        handleVoiceTranscript(transcript);
-      };
-
-      recognition.onerror = () => {
-        isVoiceListening = false;
-        if (voiceToggleBtn) {
-          voiceToggleBtn.classList.remove('listening');
-        }
-        if (voiceIndicator) voiceIndicator.classList.remove('active');
-      };
-
-      recognition.onend = () => {
-        isVoiceListening = false;
-        if (voiceToggleBtn) {
-          voiceToggleBtn.classList.remove('listening');
-        }
-        if (voiceIndicator) voiceIndicator.classList.remove('active');
-      };
-    }
-
-    // Hold to talk - press and hold mic button
+    // Tap-to-toggle mic: start recording on first tap, stop + send on second
     if (voiceToggleBtn) {
-      voiceToggleBtn.addEventListener('pointerdown', (e) => {
-        if (e.pointerType === 'touch') return; // Touch handled separately
-        e.preventDefault();
-        if (canUseVoice && !isVoiceListening) startVoiceListening();
+      voiceToggleBtn.addEventListener('click', () => {
+        if (vrProcessing) return;
+        if (vrRecording) {
+          stopVoiceRecording();
+        } else {
+          if (typeof MediaRecorder === 'undefined' || !navigator.mediaDevices) {
+            if (voiceStatus) voiceStatus.textContent = 'Voice not supported in this browser';
+            return;
+          }
+          startVoiceRecording();
+        }
       });
-      voiceToggleBtn.addEventListener('pointerup', (e) => {
-        if (e.pointerType === 'touch') return;
-        e.preventDefault();
-        if (canUseVoice && isVoiceListening) stopVoiceListening();
-      });
-      voiceToggleBtn.addEventListener('pointerleave', () => {
-        if (canUseVoice && isVoiceListening) stopVoiceListening();
-      });
-      // Touch: tap to toggle
-      voiceToggleBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-      }, { passive: false });
     }
 
     talkBtn.addEventListener('click', () => {
@@ -1245,11 +1233,7 @@ if (!launcher || !panel || !closeBtn || !talkBtn || !alertLinksWrap || !alertWha
     setSyncStatus('Central memory sync: checking...', 'warn');
 
     fetchCentralMemory().finally(() => {
-      if (!history.length) {
-        appendMessage('assistant', 'Hello, welcome to SGC TECH AI. I am Aira. How can I support your B2B sales goals today?');
-      } else {
-        renderHistory();
-      }
+      if (history.length) renderHistory();
       queueCentralSync();
     });
 
