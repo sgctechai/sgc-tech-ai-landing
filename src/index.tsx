@@ -1168,16 +1168,10 @@ app.get('/', (c) => {
 
           <div class="aira-chat-body">
 
-            {/* Mode switch */}
-            <div class="aira-mode-switch" role="tablist" aria-label="Assistant mode">
-              <button type="button" class="aira-mode-btn active" data-mode="chat" role="tab" aria-selected="true">Chat</button>
-              <button type="button" class="aira-mode-btn" data-mode="voice" role="tab" aria-selected="false">Voice</button>
-            </div>
-
             {/* Message log */}
             <div class="aira-chat-log" data-chat-log aria-live="polite" aria-label="Aira conversation history"></div>
 
-            {/* Chat form */}
+            {/* Chat form - unified with voice capability */}
             <form class="aira-chat-form" data-chat-form>
               <textarea
                 id="aira-chat-input"
@@ -1185,7 +1179,7 @@ app.get('/', (c) => {
                 class="aira-chat-input"
                 data-chat-input
                 rows={3}
-                placeholder="Ask Aira anything about SGC TECH AI…"
+                placeholder="Ask Aira anything… or hold the mic to speak"
                 autocomplete="off"
               ></textarea>
 
@@ -1212,8 +1206,8 @@ app.get('/', (c) => {
                       </svg>
                     </button>
                   </div>
-                  {/* Mic shortcut (opens Voice tab) */}
-                  <button type="button" class="aira-mic-btn" title="Switch to voice" data-mode-trigger="voice">
+                  {/* Mic button - now integrated with chat */}
+                  <button type="button" class="aira-mic-btn" title="Hold to speak" data-voice-toggle id="aira-mic-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                       <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -1234,6 +1228,17 @@ app.get('/', (c) => {
                 </div>
               </div>
 
+              {/* Voice indicator (shows when recording) */}
+              <div class="aira-voice-indicator" id="aira-voice-indicator" hidden>
+                <div class="aira-voice-visualizer" id="aira-voice-visualizer">
+                  <div class="aira-voice-bars">
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span>
+                  </div>
+                </div>
+                <span class="aira-voice-status" id="aira-voice-status">Listening…</span>
+              </div>
+
               {/* Footer row */}
               <div class="aira-form-footer">
                 <span>
@@ -1245,28 +1250,6 @@ app.get('/', (c) => {
                 </div>
               </div>
             </form>
-
-            {/* Voice panel */}
-            <div class="aira-voice-panel" data-voice-panel hidden>
-              <div class="aira-voice-recorder">
-                <div class="aira-voice-visualizer" id="aira-voice-visualizer">
-                  <div class="aira-voice-bars">
-                    <span></span><span></span><span></span><span></span><span></span>
-                    <span></span><span></span>
-                  </div>
-                </div>
-                <p class="aira-voice-status" id="aira-voice-status">Tap the microphone to start</p>
-                <button type="button" class="aira-voice-mic-btn" data-voice-toggle id="aira-voice-mic-btn">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                    <line x1="12" y1="19" x2="12" y2="23"/>
-                    <line x1="8" y1="23" x2="16" y2="23"/>
-                  </svg>
-                </button>
-                <p class="aira-voice-hint">Hold button or press Space to talk</p>
-              </div>
-            </div>
 
             {/* Quick action buttons */}
             <div class="aira-quick-actions">

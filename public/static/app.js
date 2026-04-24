@@ -600,7 +600,7 @@
   })();
 
   // =====================================================================
-  // AIRA CHATBOX — mode switch + quick actions + human alert handoff
+  // AIRA CHATBOX — unified voice + chat interface with intent detection
   // =====================================================================
   function initAiraChatbox() {
     const root = document.querySelector('.aira-chatbox');
@@ -609,7 +609,6 @@
     const launcher = root.querySelector('[data-chat-launcher]');
     const panel = root.querySelector('[data-chat-panel]');
     const closeBtn = root.querySelector('[data-chat-close]');
-    const modeBtns = Array.from(root.querySelectorAll('[data-mode]'));
     const talkBtn = root.querySelector('[data-talk-human]');
     const alertLinksWrap = root.querySelector('[data-alert-links]');
     const alertWhatsapp = root.querySelector('[data-alert-whatsapp]');
@@ -617,13 +616,11 @@
     const chatLog = root.querySelector('[data-chat-log]');
     const chatForm = root.querySelector('[data-chat-form]');
     const chatInput = root.querySelector('[data-chat-input]');
-    const voicePanel = root.querySelector('[data-voice-panel]');
     const voiceToggleBtn = root.querySelector('[data-voice-toggle]');
-    const voiceStatus = root.querySelector('#aira-voice-status');
-    const voiceVisualizer = root.querySelector('#aira-voice-visualizer');
+    const voiceIndicator = root.querySelector('#aira-voice-indicator');
     const syncStatus = root.querySelector('[data-sync-status]');
 
-if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLinksWrap || !alertWhatsapp || !alertTelegram || !chatLog || !chatForm || !chatInput || !voicePanel || !voiceToggleBtn) {
+if (!launcher || !panel || !closeBtn || !talkBtn || !alertLinksWrap || !alertWhatsapp || !alertTelegram || !chatLog || !chatForm || !chatInput || !voiceToggleBtn) {
       return;
     }
 
@@ -1013,10 +1010,8 @@ if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLi
       isVoiceListening = false;
       if (voiceToggleBtn) {
         voiceToggleBtn.classList.remove('listening');
-        voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
       }
-      if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
-      if (voiceStatus) voiceStatus.textContent = 'Tap the microphone to start';
+      if (voiceIndicator) voiceIndicator.classList.remove('active');
       try {
         recognition.stop();
       } catch (_) {}
@@ -1052,6 +1047,7 @@ if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLi
           hideTyping(typingEl);
           appendMessage('assistant', 'Connection error. Please try again.');
         }
+        stopVoiceListening();
       }, 1500);
     }
 
@@ -1060,20 +1056,16 @@ if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLi
       isVoiceListening = true;
       if (voiceToggleBtn) {
         voiceToggleBtn.classList.add('listening');
-        voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
       }
-      if (voiceVisualizer) voiceVisualizer.classList.add('recording');
-      if (voiceStatus) voiceStatus.textContent = 'Listening... Speak now';
+      if (voiceIndicator) voiceIndicator.classList.add('active');
       try {
         recognition.start();
       } catch (_) {
         isVoiceListening = false;
         if (voiceToggleBtn) {
           voiceToggleBtn.classList.remove('listening');
-          voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
         }
-        if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
-        if (voiceStatus) voiceStatus.textContent = 'Tap the microphone to start';
+        if (voiceIndicator) voiceIndicator.classList.remove('active');
       }
       appendEvent('voice_start', 'manual');
     }
@@ -1090,33 +1082,13 @@ if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLi
       }
       launcher.setAttribute('aria-expanded', String(open));
       launcher.classList.toggle('is-active', open);
-      appendEvent(open ? 'open_panel' : 'close_panel', root.getAttribute('data-active-mode') || 'chat');
-    };
-
-    const setMode = (mode) => {
-      root.setAttribute('data-active-mode', mode);
-      modeBtns.forEach((btn) => {
-        const active = btn.getAttribute('data-mode') === mode;
-        btn.classList.toggle('active', active);
-        btn.setAttribute('aria-selected', String(active));
-      });
-      const isVoiceMode = mode === 'voice';
-      chatForm.hidden = isVoiceMode;
-      voicePanel.hidden = !isVoiceMode;
-
-      if (!isVoiceMode) {
-        stopVoiceListening();
-      } else if (!canUseVoice) {
-        voiceToggleBtn.disabled = true;
-      }
+      appendEvent(open ? 'open_panel' : 'close_panel', 'unified');
     };
 
     const buildAlertMessage = () => {
-      const activeMode = root.getAttribute('data-active-mode') || 'chat';
       return [
         'Talk-to-human request from Aira chatbox.',
         'Session: ' + sessionId,
-        'Mode: ' + activeMode,
         'Page: ' + window.location.href,
         'Please follow up with this lead immediately.',
       ].join(' ');
@@ -1132,14 +1104,6 @@ if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLi
     document.addEventListener('click', (e) => {
       if (panel.hidden) return;
       if (!root.contains(e.target)) setOpen(false);
-    });
-
-    modeBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const mode = btn.getAttribute('data-mode') || 'chat';
-        setMode(mode);
-        appendEvent('switch_mode', mode);
-      });
     });
 
     // Character counter + Enter-to-send for textarea
@@ -1206,20 +1170,16 @@ if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLi
         isVoiceListening = false;
         if (voiceToggleBtn) {
           voiceToggleBtn.classList.remove('listening');
-          voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
         }
-        if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
-        if (voiceStatus) voiceStatus.textContent = 'Tap the microphone to start';
+        if (voiceIndicator) voiceIndicator.classList.remove('active');
       };
 
       recognition.onend = () => {
         isVoiceListening = false;
         if (voiceToggleBtn) {
           voiceToggleBtn.classList.remove('listening');
-          voiceToggleBtn.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
         }
-        if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
-        if (voiceStatus) voiceStatus.textContent = 'Tap the microphone to start';
+        if (voiceIndicator) voiceIndicator.classList.remove('active');
       };
     }
 
@@ -1244,21 +1204,6 @@ if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLi
       }, { passive: false });
     }
 
-    // Keyboard: Space to toggle when in voice mode
-    root.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && root.getAttribute('data-active-mode') === 'voice' && !e.repeat) {
-        if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
-        e.preventDefault();
-        if (canUseVoice && !isVoiceListening) startVoiceListening();
-      }
-    });
-    root.addEventListener('keyup', (e) => {
-      if (e.code === 'Space' && root.getAttribute('data-active-mode') === 'voice') {
-        e.preventDefault();
-        if (canUseVoice && isVoiceListening) stopVoiceListening();
-      }
-    });
-
     talkBtn.addEventListener('click', () => {
       const message = buildAlertMessage();
       const encoded = encodeURIComponent(message);
@@ -1270,7 +1215,7 @@ if (!launcher || !panel || !closeBtn || !modeBtns.length || !talkBtn || !alertLi
       alertTelegram.setAttribute('href', telegramUrl);
       alertTelegram.setAttribute('data-fallback-href', telegramWebFallback);
       alertLinksWrap.hidden = false;
-      appendEvent('talk_to_human', root.getAttribute('data-active-mode') || 'chat');
+      appendEvent('talk_to_human', 'unified');
     });
 
     alertWhatsapp.addEventListener('click', () => {
