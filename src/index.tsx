@@ -1266,6 +1266,36 @@ app.get('/', (c) => {
                 </button>
                 <p class="aira-voice-hint">Hold button or press Space to talk</p>
               </div>
+
+              {/* Confirmation Panel - Phase 2 NEW */}
+              <div class="aira-voice-confirmation" data-voice-confirmation hidden>
+                <div class="aira-confirmation-content">
+                  <h3 class="aira-confirmation-heading">What did you say?</h3>
+                  
+                  <div class="aira-transcript-preview" id="aira-transcript-preview">
+                    {/* Transcript text inserted by JS */}
+                  </div>
+                  
+                  <div class="aira-confirmation-actions">
+                    <button 
+                      type="button" 
+                      class="aira-btn-cancel" 
+                      data-voice-confirm-cancel
+                      aria-label="Cancel voice message"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="button" 
+                      class="aira-btn-send-voice" 
+                      data-voice-confirm-send
+                      aria-label="Send voice message"
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Quick action buttons */}
