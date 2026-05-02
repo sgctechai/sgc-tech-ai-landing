@@ -69,11 +69,18 @@ export const renderer = jsxRenderer(({ children }) => {
         <link rel="preconnect" href="https://api.fontshare.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Outfit:wght@400;500&display=swap" rel="stylesheet" />
         <link href="/static/style.css" rel="stylesheet" />
       </head>
       <body>
         {children}
-        <script src="https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js" defer></script>
+        {/* GSAP 3D animation engine + ScrollTrigger */}
+        <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/Observer.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.4/dist/lenis.min.js" defer></script>
         {/* particles.js — vanilla library powering the hero background */}
         <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js" defer></script>
         {/* Main interaction layer - initializes after all libraries load */}

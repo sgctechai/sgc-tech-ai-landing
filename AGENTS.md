@@ -47,11 +47,12 @@
 - **Background**: `#0b0e27` (navy-900) with radial mesh + noise
 - **Primary accent**: `#00d9ff` (electric cyan)
 - **Secondary accent**: `#0047ff` (tech blue)
-- **Display font**: Space Grotesk (600/700)
-- **Body font**: Outfit (400/500)
-- **Mono font**: JetBrains Mono (labels, prices)
+- **Display font**: Space Grotesk (600/700) — loaded via Google Fonts in renderer.tsx
+- **Body font**: Outfit (400/500) — loaded via Google Fonts in renderer.tsx
+- **Mono font**: JetBrains Mono (labels, prices) — loaded via Google Fonts in style.css
 
 **Anti-pattern compliance** (do NOT add):
+- ❌ Satoshi font — replaced with Space Grotesk + Outfit
 - ❌ Inter font — use Space Grotesk + Outfit
 - ❌ Purple gradients — cyan/tech-blue only
 - ❌ Centered hero — asymmetric grid

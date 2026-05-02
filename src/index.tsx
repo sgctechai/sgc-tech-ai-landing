@@ -239,19 +239,19 @@ const stories = [
 
 const testimonials = [
   {
-    name: 'Rachel Tanaka', role: 'VP Operations, Meridian Logistics',
-    avatar: 'RT',
-    quote: 'We were live in under three weeks. The route-optimization agent saved us $340k in the first quarter. Our ops team calls it the hardest-working employee they\'ve ever hired.',
+    name: 'Operations Lead', role: 'Logistics Sector',
+    avatar: 'OL',
+    quote: 'We were live in under three weeks. The route-optimization agent saved us $340k in the first quarter. Our ops team calls it the hardest-working capability they\'ve ever deployed.',
   },
   {
-    name: 'Daniel Okonkwo', role: 'CTO, Vertex Financial Group',
-    avatar: 'DO',
+    name: 'Chief Technology Officer', role: 'Financial Services',
+    avatar: 'CT',
     quote: 'SGC TECH passed our security review faster than any vendor we\'ve onboarded. The model-agnostic architecture means we\'re not locked into a single LLM provider. That\'s rare.',
   },
   {
-    name: 'Priya Venkatesh', role: 'Head of CX, Northwind Retail',
-    avatar: 'PV',
-    quote: 'Support ticket resolution time dropped 63%. Not hype — actual data from our Zendesk instance. The agents sound like our best senior reps, not a chatbot.',
+    name: 'Head of Customer Experience', role: 'Retail & eCommerce',
+    avatar: 'HC',
+    quote: 'Support ticket resolution time dropped 63%. Not hype — actual data from our support instance. The agents sound like our best senior reps, not a chatbot.',
   },
 ]
 
@@ -788,13 +788,13 @@ app.get('/', (c) => {
           <div class="container">
             <div class="hero-grid">
               <div>
-                <div class="hero-badge reveal">
+                <div class="hero-badge hero-fade">
                   <span class="dot"></span>
                   <span>AI-Powered · Real Cost Savings · Real Results</span>
                 </div>
 
                 {/* Pain-point narrative frame */}
-                <div class="hero-pain reveal reveal-delay-1">
+                <div class="hero-pain hero-fade" style="animation-delay: 0.2s;">
                   <p class="pain-top">Your business deserves <em>better than this.</em></p>
 
                   <div class="pain-stage" aria-live="polite" aria-atomic="true">
@@ -802,13 +802,17 @@ app.get('/', (c) => {
                     <p class="pain-text" id="painText">Chasing approvals on WhatsApp.</p>
                   </div>
 
-                  <h1 class="pain-bottom">
-                    SGC Tech AI fixes it.<br />
-                    <span class="text-gradient-cyan">Fixed price. Fixed timeline.</span>
-                  </h1>
+                  {/* RAM Calligraphy Image - replaces hardcoded text */}
+                  <div class="hero-ram-image-wrapper hero-fade" style="animation-delay: 0.35s;">
+                    <img
+                      src="/static/ram-calligraphy.png"
+                      alt="RAM"
+                      class="hero-ram-image"
+                    />
+                  </div>
                 </div>
 
-                <div class="hero-ctas reveal reveal-delay-2">
+                <div class="hero-ctas hero-fade" style="animation-delay: 0.4s;">
                   <a href="#pricing" class="btn btn-primary btn-lg" data-magnetic>
                     Calculate your ROI <IconArrow />
                   </a>
@@ -819,7 +823,7 @@ app.get('/', (c) => {
 
                 <AwardBadges />
 
-                <div class="hero-stats reveal reveal-delay-4">
+                <div class="hero-stats hero-fade" style="animation-delay: 0.6s;">
                   <div>
                     <div class="stat-value"><span data-count="30" data-suffix="">0</span></div>
                     <div class="stat-label">Day deployment</div>
@@ -851,9 +855,9 @@ app.get('/', (c) => {
         {/* ============== TRUST BAR ============== */}
         <section class="trust-bar">
           <div class="container" style="margin-bottom: 1.5rem;">
-            <p style="text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray-500);">
-              Cutting costs and optimizing operations at <span style="color: var(--cyan);">500+ companies</span> worldwide
-            </p>
+<p style="text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray-500);">
+                Serving clients across the <span style="color: var(--cyan);">UAE, Saudi Arabia, and beyond</span>
+              </p>
           </div>
           <div class="marquee">
             {(() => {
@@ -1059,13 +1063,13 @@ app.get('/', (c) => {
             >
               <div class="card-stack-stage">
                 <div class="card-stack-viewport">
-                  {stories.map((s) => (
-                    <article
-                      class="stack-card"
-                      data-id={s.id}
-                      data-href={s.href}
-                      aria-label={`${s.title} — ${s.description}`}
-                    >
+{stories.map((s) => (
+                      <article
+                        class="stack-card"
+                        data-id={s.id}
+                        data-href="/quote-builder"
+                        aria-label={`${s.title} — ${s.description}`}
+                      >
                       <div class="stack-card-inner">
                         <img src={s.image} alt={s.title} loading="lazy" draggable={false} />
                         <div class="stack-card-overlay"></div>
@@ -1108,7 +1112,7 @@ app.get('/', (c) => {
                   </svg>
                 </button>
 
-                <a href="#" target="_blank" rel="noopener noreferrer" class="cs-external" aria-label="Open case study">
+                <a href="/quote-builder" class="cs-external" aria-label="Build a quote for this industry">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M7 17L17 7M7 7h10v10" />
                   </svg>
@@ -1326,15 +1330,11 @@ app.get('/', (c) => {
               </button>
             </div>
 
-            {/* Human-alert links (shown after Talk to Human) */}
-            <div class="aira-alert-links" data-alert-links hidden>
-              <a href="#" target="_blank" rel="noopener noreferrer" class="aira-alert-btn" data-alert-whatsapp>
-                WhatsApp
-              </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" class="aira-alert-btn" data-alert-telegram>
-                Telegram
-              </a>
-            </div>
+{/* Human-alert links (shown after Talk to Human) */}
+                <div class="aira-alert-links" data-alert-links hidden>
+                  <a href="https://wa.me/971563905772" target="_blank" rel="noopener noreferrer" class="aira-alert-btn" data-alert-whatsapp>WhatsApp</a>
+                  <a href="https://t.me/sgctech_ai" target="_blank" rel="noopener noreferrer" class="aira-alert-btn" data-alert-telegram>Telegram</a>
+                </div>
 
           </div>
 
@@ -1343,63 +1343,63 @@ app.get('/', (c) => {
         </section>
       </div>
 
-      {/* ============== FOOTER ============== */}
-      <footer>
-        <div class="container">
-          <div class="footer-grid">
-            <div class="footer-brand">
-              <a href="#top" class="nav-logo">
-                <img src="/static/sgc-tech-logo.png" alt="SGC TECH AI" style="width: 44px; height: 44px;" />
-                <span>SGC <span style="color: var(--cyan)">TECH</span></span>
-              </a>
-              <p>Production AI for regulated enterprises. Fixed scope, fixed price, live within 30 days — from handshake to real business impact.</p>
+{/* ============== FOOTER ============== */}
+        <footer>
+          <div class="container">
+            <div class="footer-grid">
+              <div class="footer-brand">
+                <a href="#top" class="nav-logo">
+                  <img src="/static/sgc-tech-logo.png" alt="SGC TECH AI" style="width: 44px; height: 44px;" />
+                  <span>SGC <span style="color: var(--cyan)">TECH</span></span>
+                </a>
+                <p>Production AI for regulated enterprises. Fixed scope, fixed price, live within 30 days — from handshake to real business impact.</p>
+              </div>
+
+              <div class="footer-col">
+                <h5>Product</h5>
+                <ul>
+                  <li><a href="#industries">Industries</a></li>
+                  <li><a href="#why">Platform</a></li>
+                  <li><a href="#pricing">Pricing</a></li>
+                  <li><a href="mailto:info@sgctech.ai">Integrations Inquiry</a></li>
+                  <li><a href="/quote-builder">Get a Quote</a></li>
+                </ul>
+              </div>
+
+              <div class="footer-col">
+                <h5>Company</h5>
+                <ul>
+                  <li><a href="mailto:info@sgctech.ai">About</a></li>
+                  <li><a href="#testimonials">Customers</a></li>
+                  <li><a href="mailto:hiring@sgctech.ai">Careers</a></li>
+                  <li><a href="mailto:press@sgctech.ai">Press</a></li>
+                  <li><a href="mailto:info@sgctech.ai">Contact</a></li>
+                </ul>
+              </div>
+
+              <div class="footer-col">
+                <h5>Legal</h5>
+                <ul>
+                  <li><a href="/privacy">Privacy Policy</a></li>
+                  <li><a href="/terms">Terms of Service</a></li>
+                  <li><a href="/security">Security Practices</a></li>
+                  <li><a href="mailto:legal@sgctech.ai">DPA Request</a></li>
+                  <li><a href="mailto:compliance@sgctech.ai">SOC 2 Report</a></li>
+                </ul>
+              </div>
             </div>
 
-            <div class="footer-col">
-              <h5>Product</h5>
-              <ul>
-                <li><a href="#industries">Industries</a></li>
-                <li><a href="#why">Platform</a></li>
-                <li><a href="#pricing">Pricing</a></li>
-                <li><a href="#">Integrations</a></li>
-                <li><a href="#">Changelog</a></li>
-              </ul>
-            </div>
-
-            <div class="footer-col">
-              <h5>Company</h5>
-              <ul>
-                <li><a href="#">About</a></li>
-                <li><a href="#testimonials">Customers</a></li>
-                <li><a href="#">Careers</a></li>
-                <li><a href="#">Press</a></li>
-                <li><a href="#">Contact</a></li>
-              </ul>
-            </div>
-
-            <div class="footer-col">
-              <h5>Legal</h5>
-              <ul>
-                <li><a href="#">Privacy</a></li>
-                <li><a href="#">Terms</a></li>
-                <li><a href="#">Security</a></li>
-                <li><a href="#">DPA</a></li>
-                <li><a href="#">SOC 2 Report</a></li>
-              </ul>
+            <div class="footer-bottom">
+              <p>© {new Date().getFullYear()} SGC TECH AI · All rights reserved · Built for teams that ship.</p>
+              <div class="social">
+                <a href="https://twitter.com/sgctechai" aria-label="Twitter / X" target="_blank" rel="noopener noreferrer"><IconTwitter /></a>
+                <a href="https://linkedin.com/company/sgctech-ai" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><IconLinkedin /></a>
+                <a href="https://github.com/sgctech-ai" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><IconGithub /></a>
+                <a href="https://youtube.com/@sgctechai" aria-label="YouTube" target="_blank" rel="noopener noreferrer"><IconYoutube /></a>
+              </div>
             </div>
           </div>
-
-          <div class="footer-bottom">
-            <p>© {new Date().getFullYear()} SGC TECH AI · All rights reserved · Built for teams that ship.</p>
-            <div class="social">
-              <a href="#" aria-label="Twitter / X"><IconTwitter /></a>
-              <a href="#" aria-label="LinkedIn"><IconLinkedin /></a>
-              <a href="#" aria-label="GitHub"><IconGithub /></a>
-              <a href="#" aria-label="YouTube"><IconYoutube /></a>
-            </div>
-          </div>
-        </div>
-      </footer>
+        </footer>
     </>
   )
 })
