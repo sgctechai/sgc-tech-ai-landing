@@ -21,6 +21,7 @@ export const Nav = () => (
         <li><a href="/#stories">Stories</a></li>
         <li><a href="/#faq">FAQ</a></li>
         <li><a href="/quote-builder" class="nav-quote-link">Quote Builder</a></li>
+        <li><a href="/download" class="nav-download-link">Download</a></li>
       </ul>
       <div class="nav-cta">
         <a

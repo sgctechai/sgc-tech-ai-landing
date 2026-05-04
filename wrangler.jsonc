@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "webapp",
+	"name": "sgc-tech-ai-landing",
 	"compatibility_date": "2026-04-13",
 	"pages_build_output_dir": "./dist",
 	"compatibility_flags": [
@@ -11,6 +11,12 @@
 			"binding": "AIRA_BRAIN_KV",
 			"id": "d5ab928d6e8142fc8f2fb84d1a59dfb4",
 			"remote": true
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "DOWNLOADS",
+			"bucket_name": "aicc-downloads"
 		}
 	],
 	"vars": {

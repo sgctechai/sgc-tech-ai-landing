@@ -11,6 +11,7 @@ import {
 } from './components/Icons'
 import { AwardBadges } from './components/AwardBadges'
 import { CircuitBg } from './components/CircuitBg'
+import { Nav } from './components/Nav'
 
 const app = new Hono()
 
@@ -765,6 +766,7 @@ app.get('/', (c) => {
             <li><a href="#stories">Stories</a></li>
             <li><a href="#faq">FAQ</a></li>
             <li><a href="/quote-builder" class="nav-quote-link">Quote Builder</a></li>
+            <li><a href="/download" class="nav-download-link">Download</a></li>
           </ul>
           <div class="nav-cta">
             <a href="https://scholarixglobal.com/web/login" class="btn btn-ghost" style="padding: 0.55rem 1.1rem;" target="_blank" rel="noopener noreferrer">Sign in</a>
@@ -1363,6 +1365,7 @@ app.get('/', (c) => {
                 <li><a href="#pricing">Pricing</a></li>
                 <li><a href="#">Integrations</a></li>
                 <li><a href="#">Changelog</a></li>
+                <li><a href="/download">Download App</a></li>
               </ul>
             </div>
 
@@ -1400,6 +1403,140 @@ app.get('/', (c) => {
           </div>
         </div>
       </footer>
+    </>
+  )
+})
+
+/* ---------- Downloads — R2 file serving ---------- */
+
+app.get('/downloads/:file', async (c) => {
+  const env = c.env as Record<string, string> & { DOWNLOADS?: R2Bucket }
+  const bucket = env.DOWNLOADS
+  if (!bucket) {
+    return c.text('Download service unavailable.', 503)
+  }
+
+  const filename = c.req.param('file')
+  if (!filename || filename.includes('/') || filename.includes('..')) {
+    return c.text('Not found.', 404)
+  }
+
+  const object = await bucket.get(filename)
+  if (!object) {
+    return c.text('File not found.', 404)
+  }
+
+  const headers = new Headers()
+  object.writeHttpMetadata(headers)
+  headers.set('Content-Disposition', `attachment; filename="${filename}"`)
+  headers.set('Cache-Control', 'public, max-age=3600')
+
+  return new Response(object.body, { headers })
+})
+
+/* ---------- Download Page ---------- */
+
+app.get('/download', (c) => {
+  return c.render(
+    <>
+      <Nav />
+      <main id="top">
+        <section class="dl-hero">
+          <CircuitBg />
+          <div class="container">
+
+            <div class="section-header center reveal">
+              <div class="section-label">Free Pre-Release · v1.0.0</div>
+              <h1>AI Command <span class="text-gradient-cyan">Center</span></h1>
+              <p class="lead" style="margin: 0 auto;">Turn your Telegram bot into a powerful AI command center. Control
+automations, run workflows, and connect your stack — from your phone.</p>
+            </div>
+
+            <div class="dl-card-wrap reveal reveal-delay-1">
+
+              <div class="glass dl-card" id="dlFormState">
+                <div class="spotlight"></div>
+                <h3 style="margin-bottom: 0.5rem;">Get Early Access</h3>
+                <p style="color: var(--gray-300); margin-bottom: 1.75rem; font-size: 0.95rem;">Enter your details to unlock the free download</p>
+                <form id="leadForm" class="dl-form">
+                  <input type="text" id="dlName" required placeholder="Your Name" class="dl-input" />
+                  <input type="email" id="dlEmail" required placeholder="Work Email" class="dl-input" />
+                  <input type="text" id="dlCompany" placeholder="Company (Optional)" class="dl-input" />
+                  <label class="dl-consent">
+                    <input type="checkbox" id="dlConsent" required />
+                    <span>I agree to receive updates about AI Command Center</span>
+                  </label>
+                  <button type="submit" class="btn btn-primary dl-submit">
+                    Unlock Download Links <IconArrow />
+                  </button>
+                </form>
+              </div>
+
+              <div class="glass dl-card" id="dlSuccessState" style="display:none;">
+                <div class="spotlight"></div>
+                <div class="dl-check">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <h3 style="margin-bottom: 0.5rem;">You're in!</h3>
+                <p style="color: var(--gray-300); margin-bottom: 2rem; font-size: 0.95rem;">Choose your Windows installer:</p>
+                <div class="dl-links">
+                  <a href="/downloads/AI-Command-Center_1.0.0_x64.msi" class="btn btn-primary dl-link-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    MSI Installer <span class="dl-size font-mono">3.2 MB</span>
+                  </a>
+                  <a href="/downloads/AI-Command-Center_1.0.0_x64-setup.exe" class="btn btn-ghost dl-link-btn dl-link-ghost">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    EXE Installer <span class="dl-size font-mono">2.2 MB</span>
+                  </a>
+                </div>
+                <p class="dl-contact">Questions? <a href="mailto:info@sgctech.ai" style="color: var(--cyan);">info@sgctech.ai</a></p>
+              </div>
+
+            </div>
+
+            <div class="dl-features reveal reveal-delay-2">
+              <div class="glass dl-feat">
+                <div class="spotlight"></div>
+                <div class="dl-feat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.09 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17l.92-.08z"/></svg>
+                </div>
+                <h4>Telegram Control</h4>
+                <p>Control everything from Telegram. No desktop window needed.</p>
+              </div>
+              <div class="glass dl-feat">
+                <div class="spotlight"></div>
+                <div class="dl-feat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <h4>Desktop App</h4>
+                <p>Beautiful Windows desktop app with buttons, chat, and settings.</p>
+              </div>
+              <div class="glass dl-feat">
+                <div class="spotlight"></div>
+                <div class="dl-feat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <h4>Integrations</h4>
+                <p>Connect n8n, Odoo, Bitrix24 via webhooks — zero configuration.</p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+      </main>
+
+      <script innerHTML={`
+        (() => {
+          const form = document.getElementById('leadForm');
+          if (form) {
+            form.addEventListener('submit', function(e) {
+              e.preventDefault();
+              document.getElementById('dlFormState').style.display = 'none';
+              document.getElementById('dlSuccessState').style.display = 'block';
+            });
+          }
+        })();
+      `}></script>
     </>
   )
 })

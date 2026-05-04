@@ -13,6 +13,11 @@ const PAGE_META: Record<string, { title: string; description: string; ogTitle?: 
     description: 'Build your custom AI implementation quote. Transparent pricing, zero surprises, 30-day deployment. Configure AI features and ERP modules to get an instant estimate.',
     ogTitle: 'Quote Builder — Build Your Custom AI Implementation Package',
   },
+  '/download': {
+    title: 'AI Command Center — Free Download | SGC TECH AI',
+    description: 'Download AI Command Center v1.0.0 — free pre-release Windows app. Turn your Telegram bot into a powerful AI workflow engine with 200+ integrations.',
+    ogTitle: 'AI Command Center — Free Pre-Release Download',
+  },
   '/terms': {
     title: 'Terms of Service — SGC TECH AI',
     description: 'Terms of service for SGC TECH AI platform and services.',
