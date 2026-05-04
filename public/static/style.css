@@ -3533,3 +3533,257 @@ footer {
 #qb-mobile {
   width: 100%;
 }
+
+/* ============================================================
+   DOWNLOAD PAGE — /download
+   AI Command Center pre-release distribution
+   ============================================================ */
+
+/* ── Hero wrapper ── */
+.dl-hero {
+  position: relative;
+  min-height: 100vh;
+  padding: clamp(7rem, 11vw, 9rem) 0 clamp(4rem, 8vw, 6rem);
+  overflow: hidden;
+}
+
+/* radial glow behind the card */
+.dl-hero::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 500px;
+  background: radial-gradient(ellipse at center, rgba(0,217,255,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dl-hero .container { position: relative; z-index: 1; }
+
+/* ── Section header (reuse existing .section-header.center pattern) ── */
+.dl-hero .section-header.center { margin-bottom: 3.5rem; }
+.dl-hero .section-header h1    { font-size: clamp(2.6rem, 6vw, 4.5rem); }
+.dl-hero .section-header .lead {
+  max-width: 580px;
+  color: var(--gray-300);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+/* ── Card wrapper: centers the single card, limits width ── */
+.dl-card-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0 auto 4.5rem;
+  max-width: 480px;
+  width: 100%;
+}
+
+/* ── Main glass card ── */
+.dl-card {
+  width: 100%;
+  padding: clamp(2rem, 5vw, 2.75rem);
+  border-radius: var(--radius-xl);
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow:
+    0 0 0 1px rgba(0,217,255,0.06) inset,
+    0 24px 64px rgba(0,0,0,0.5),
+    0 0 80px rgba(0,217,255,0.04);
+  transition: border-color 0.3s;
+}
+
+.dl-card:hover { border-color: var(--glass-border-hover); }
+
+.dl-card h3 {
+  font-size: 1.35rem;
+  margin-bottom: 0.4rem;
+  color: var(--white);
+}
+
+/* ── Lead-capture form ── */
+.dl-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.dl-input {
+  display: block;
+  width: 100%;
+  padding: 0.875rem 1.125rem;
+  background: rgba(11, 14, 39, 0.7);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.dl-input::placeholder { color: var(--gray-500); }
+
+.dl-input:focus {
+  border-color: rgba(0, 217, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+}
+
+/* consent row */
+.dl-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--gray-400);
+  line-height: 1.5;
+}
+
+.dl-consent input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: var(--cyan);
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+}
+
+/* submit button — full width */
+.dl-submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+/* ── Success state ── */
+.dl-check {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cyan);
+  margin-bottom: 1.5rem;
+}
+
+.dl-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.dl-link-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 0.625rem;
+  border-radius: var(--radius-sm);
+}
+
+.dl-link-ghost {
+  background: transparent;
+  border: 1px solid var(--glass-border-hover);
+  color: var(--white);
+}
+.dl-link-ghost:hover {
+  background: rgba(0, 217, 255, 0.08);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.dl-size {
+  font-size: 0.78em;
+  opacity: 0.6;
+  margin-left: 0.25rem;
+}
+
+.dl-contact {
+  font-size: 0.85rem;
+  color: var(--gray-400);
+  text-align: center;
+  margin-top: 1.75rem;
+}
+
+/* ── Feature cards grid ── */
+.dl-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.dl-feat {
+  padding: 1.75rem;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 0.25s, transform 0.25s;
+}
+
+.dl-feat:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-3px);
+}
+
+.dl-feat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cyan);
+  margin-bottom: 1rem;
+}
+
+.dl-feat h4 {
+  margin-bottom: 0.45rem;
+  font-size: 1rem;
+  color: var(--white);
+}
+
+.dl-feat p {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--gray-400);
+}
+
+/* ── nav download link styling ── */
+.nav-download-link {
+  color: var(--cyan) !important;
+  border: 1px solid rgba(0,217,255,0.3);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem !important;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.nav-download-link:hover {
+  background: rgba(0,217,255,0.1);
+  border-color: var(--cyan);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .dl-features { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .dl-features { grid-template-columns: 1fr; }
+  .dl-card-wrap { padding: 0 0.5rem; }
+}
