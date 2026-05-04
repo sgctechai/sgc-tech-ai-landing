@@ -1445,31 +1445,134 @@ app.get('/download', (c) => {
           <CircuitBg />
           <div class="container">
 
+            {/* ── Hero ── */}
             <div class="section-header center reveal">
-              <div class="section-label">Free Pre-Release · v1.0.0</div>
-              <h1>AI Command <span class="text-gradient-cyan">Center</span></h1>
-              <p class="lead" style="margin: 0 auto;">Turn your Telegram bot into a powerful AI command center. Control
-automations, run workflows, and connect your stack — from your phone.</p>
+              <div class="dl-eyebrow">
+                <span class="dl-dot"></span>
+                Early Access &nbsp;·&nbsp; Windows &nbsp;·&nbsp; Free
+              </div>
+              <h1>Your AI stack,<br /><span class="text-gradient-cyan">commanded from a message.</span></h1>
+              <p class="lead" style="margin: 0 auto; max-width: 540px;">
+                Something is running 24/7 — monitoring your leads, triggering workflows, briefing you on demand.
+                You just sent a Telegram message.
+              </p>
+              <a href="#dl-form" class="btn btn-primary dl-hero-cta">
+                Get Early Access <IconArrow />
+              </a>
             </div>
 
-            <div class="dl-card-wrap reveal reveal-delay-1">
+            {/* ── Trust bar ── */}
+            <div class="dl-trust-bar reveal reveal-delay-1">
+              <div class="dl-trust-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                No setup wizard
+              </div>
+              <div class="dl-trust-sep"></div>
+              <div class="dl-trust-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Works while you sleep
+              </div>
+              <div class="dl-trust-sep"></div>
+              <div class="dl-trust-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Windows 10 / 11
+              </div>
+              <div class="dl-trust-sep"></div>
+              <div class="dl-trust-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Live integrations, zero code
+              </div>
+            </div>
+
+            {/* ── Teaser section ── */}
+            <div class="dl-teasers reveal reveal-delay-1">
+              <p class="dl-teaser-label font-mono">What does this actually do?</p>
+              <h2 class="dl-teaser-h">One message. Infinite actions.</h2>
+              <p class="dl-teaser-sub">
+                Most businesses have the tools. They're missing the interface that ties them together.
+                AI Command Center is that interface — running silently on Windows, listening for your next command.
+              </p>
+              <div class="dl-teaser-lines">
+                <div class="dl-teaser-line">
+                  <span class="dl-teaser-arrow">→</span>
+                  <span>Send a Telegram message and <strong>launch a full client onboarding workflow</strong> in Odoo</span>
+                </div>
+                <div class="dl-teaser-line">
+                  <span class="dl-teaser-arrow">→</span>
+                  <span>Ask a question and get a <strong>live briefing on today's sales pipeline</strong> — before you open your laptop</span>
+                </div>
+                <div class="dl-teaser-line">
+                  <span class="dl-teaser-arrow">→</span>
+                  <span>Trigger an n8n automation, post a Bitrix24 update, <strong>all from one command</strong></span>
+                </div>
+                <div class="dl-teaser-line">
+                  <span class="dl-teaser-arrow">→</span>
+                  <span>No browser. No dashboard. <strong>Just results.</strong></span>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Feature cards ── */}
+            <div class="dl-features reveal reveal-delay-2">
+              <div class="glass dl-feat">
+                <div class="spotlight"></div>
+                <div class="dl-feat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.09 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17l.92-.08z"/></svg>
+                </div>
+                <div class="dl-feat-num font-mono">01</div>
+                <h4>Command from anywhere</h4>
+                <p>Telegram is your cockpit. Type a command while you're in traffic. Your system acts on it before you park.</p>
+              </div>
+              <div class="glass dl-feat">
+                <div class="spotlight"></div>
+                <div class="dl-feat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div class="dl-feat-num font-mono">02</div>
+                <h4>Your PC. Not a cloud.</h4>
+                <p>Runs on Windows. No subscriptions, no servers, no data leaving your machine. You own the process end-to-end.</p>
+              </div>
+              <div class="glass dl-feat">
+                <div class="spotlight"></div>
+                <div class="dl-feat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <div class="dl-feat-num font-mono">03</div>
+                <h4>Plug in your stack</h4>
+                <p>n8n, Odoo, Bitrix24 — one webhook per tool. If it has an API, AI Command Center can reach it.</p>
+              </div>
+            </div>
+
+            {/* ── Early access form ── */}
+            <div class="dl-card-wrap reveal reveal-delay-2" id="dl-form">
 
               <div class="glass dl-card" id="dlFormState">
                 <div class="spotlight"></div>
-                <h3 style="margin-bottom: 0.5rem;">Get Early Access</h3>
-                <p style="color: var(--gray-300); margin-bottom: 1.75rem; font-size: 0.95rem;">Enter your details to unlock the free download</p>
+                <div class="dl-access-badge">Limited Early Access</div>
+                <h3>Join the first wave.</h3>
+                <p style="color:var(--gray-300); margin-bottom: 0.5rem; font-size: 0.9rem; line-height: 1.6;">
+                  We're letting in a small group of early testers before the public release.
+                  Drop your details — you'll get direct download links instantly.
+                </p>
+                <div class="dl-progress-wrap">
+                  <div class="dl-progress-bar"></div>
+                  <span class="dl-progress-label font-mono">67% of early slots claimed</span>
+                </div>
                 <form id="leadForm" class="dl-form">
-                  <input type="text" id="dlName" required placeholder="Your Name" class="dl-input" />
-                  <input type="email" id="dlEmail" required placeholder="Work Email" class="dl-input" />
-                  <input type="text" id="dlCompany" placeholder="Company (Optional)" class="dl-input" />
+                  <input type="text" id="dlName" required placeholder="Your Name" class="dl-input" autocomplete="name" />
+                  <input type="email" id="dlEmail" required placeholder="Work Email" class="dl-input" autocomplete="email" />
+                  <input type="text" id="dlCompany" placeholder="Company (optional)" class="dl-input" autocomplete="organization" />
                   <label class="dl-consent">
                     <input type="checkbox" id="dlConsent" required />
-                    <span>I agree to receive updates about AI Command Center</span>
+                    <span>I agree to receive updates about AI Command Center. No spam, ever.</span>
                   </label>
                   <button type="submit" class="btn btn-primary dl-submit">
-                    Unlock Download Links <IconArrow />
+                    Reserve my copy <IconArrow />
                   </button>
                 </form>
+                <p class="dl-contact" style="margin-top:1.25rem;">
+                  Questions first? <a href="mailto:info@sgctech.ai" style="color:var(--cyan);">info@sgctech.ai</a>
+                </p>
               </div>
 
               <div class="glass dl-card" id="dlSuccessState" style="display:none;">
@@ -1477,48 +1580,31 @@ automations, run workflows, and connect your stack — from your phone.</p>
                 <div class="dl-check">
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
-                <h3 style="margin-bottom: 0.5rem;">You're in!</h3>
-                <p style="color: var(--gray-300); margin-bottom: 2rem; font-size: 0.95rem;">Choose your Windows installer:</p>
+                <h3 style="margin-bottom: 0.4rem;">You're in the first wave.</h3>
+                <p style="color:var(--gray-300); margin-bottom: 1.75rem; font-size: 0.9rem; line-height: 1.6;">
+                  Choose your Windows installer below. Try the MSI for enterprise setups,
+                  or the EXE for a quick personal install.
+                </p>
                 <div class="dl-links">
                   <a href="/downloads/AI-Command-Center_1.0.0_x64.msi" class="btn btn-primary dl-link-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     MSI Installer <span class="dl-size font-mono">3.2 MB</span>
                   </a>
-                  <a href="/downloads/AI-Command-Center_1.0.0_x64-setup.exe" class="btn btn-ghost dl-link-btn dl-link-ghost">
+                  <a href="/downloads/AI-Command-Center_1.0.0_x64-setup.exe" class="btn dl-link-btn dl-link-ghost">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     EXE Installer <span class="dl-size font-mono">2.2 MB</span>
                   </a>
                 </div>
-                <p class="dl-contact">Questions? <a href="mailto:info@sgctech.ai" style="color: var(--cyan);">info@sgctech.ai</a></p>
+                <div class="dl-specs-bar">
+                  <span>Windows 10 / 11</span>
+                  <span>·</span>
+                  <span>64-bit</span>
+                  <span>·</span>
+                  <span>No .NET required</span>
+                </div>
+                <p class="dl-contact">Need help? <a href="mailto:info@sgctech.ai" style="color:var(--cyan);">info@sgctech.ai</a></p>
               </div>
 
-            </div>
-
-            <div class="dl-features reveal reveal-delay-2">
-              <div class="glass dl-feat">
-                <div class="spotlight"></div>
-                <div class="dl-feat-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.09 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17l.92-.08z"/></svg>
-                </div>
-                <h4>Telegram Control</h4>
-                <p>Control everything from Telegram. No desktop window needed.</p>
-              </div>
-              <div class="glass dl-feat">
-                <div class="spotlight"></div>
-                <div class="dl-feat-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                </div>
-                <h4>Desktop App</h4>
-                <p>Beautiful Windows desktop app with buttons, chat, and settings.</p>
-              </div>
-              <div class="glass dl-feat">
-                <div class="spotlight"></div>
-                <div class="dl-feat-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                </div>
-                <h4>Integrations</h4>
-                <p>Connect n8n, Odoo, Bitrix24 via webhooks — zero configuration.</p>
-              </div>
             </div>
 
           </div>
@@ -1533,6 +1619,7 @@ automations, run workflows, and connect your stack — from your phone.</p>
               e.preventDefault();
               document.getElementById('dlFormState').style.display = 'none';
               document.getElementById('dlSuccessState').style.display = 'block';
+              window.scrollTo({ top: document.getElementById('dl-form').offsetTop - 80, behavior: 'smooth' });
             });
           }
         })();
